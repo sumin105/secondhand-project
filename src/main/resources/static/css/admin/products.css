@@ -1,0 +1,62 @@
+body {
+    padding: 2rem;
+    background-color: #f8f9fa;
+}
+
+h2 {
+    margin-bottom: 1.5rem;
+}
+
+table {
+    background-color: #fff;
+}
+
+.table td, .table th {
+    vertical-align: middle;
+}
+
+.status-badge {
+    padding: 0.25em 0.6em;
+    border-radius: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.status-판매중 {
+    background-color: #d1e7dd;
+    color: #0f5132;
+}
+
+.status-판매완료 {
+    background-color: #f8d7da;
+    color: #842029;
+}
+
+.pagination {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.pagination a, .pagination span {
+    display: inline-block;
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #333;
+    transition: background-color 0.2s, color 0.2s;
+    font-size: 14px;
+}
+
+.pagination a:hover {
+    background-color: #f0f0f0;
+}
+
+.pagination .active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+    pointer-events: none;
+}

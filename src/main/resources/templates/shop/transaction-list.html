@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <title>거래내역</title>
+    <link rel="stylesheet" th:href="@{/css/shop/shop-common.css}">
+    <link rel="stylesheet" th:href="@{/css/shop/transaction-list.css}">
+</head>
+<body>
+<div layout:fragment="content" class="container mt-4 main-content-padding">
+    <div th:replace="fragments/shop-header :: shopHeader('거래내역')"></div>
+
+    <div class="tab-buttons">
+        <a th:href="@{/shop/{id}/transactions(id=${headerData.shopOwnerId}, tab='purchase')}"
+           class="tab-button"
+           th:classappend="${currentTab == 'purchase'} ? 'active'">구매내역</a>
+        <a th:href="@{/shop/{id}/transactions(id=${headerData.shopOwnerId}, tab='sale')}"
+           class="tab-button"
+           th:classappend="${currentTab == 'sale'} ? 'active'">판매내역</a>
+    </div>
+
+    <div id="purchase" class="tab-content" th:classappend="${currentTab == 'purchase'} ? 'active'">
+        <div th:each="purchase : ${purchases?.content}" class="card clickable-card"
+             th:data-url="@{/orders/{id}(id=${purchase.orderId})}">
+            <div class="updated-at" th:text="${#temporals.format(purchase.updatedAt, 'yy-MM-dd')}">25-01-01</div>
+            <div class="status" th:text="${purchase.status}">거래 완료</div>
+            <div class="card-body">
+                <img class="card-img" th:src="${purchase.imageUrl}" alt="Product Image"/>
+                <div class="product-info">
+                    <div class="price" th:text="${#numbers.formatInteger(purchase.amount, 1, 'COMMA')} + '원'">0원</div>
+                    <div class="title" th:text="${purchase.title}">상품명</div>
+                    <div>판매자: <span th:text="${purchase.sellerNickname}">111</span></div>
+                    <div>거래방식: <span th:text="${purchase.deliveryMethod}">택배거래</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="pagination" th:if="${purchases != null and purchases.totalPages > 1}">
+            <a th:each="i : ${#numbers.sequence(0, purchases.totalPages - 1)}"
+               th:href="@{/shop/{id}/transactions(id=${headerData.shopOwnerId}, tab='purchase', page=${i})}"
+               th:text="${i + 1}"
+               th:classappend="${i == purchases.number} ? 'active'"></a>
+        </div>
+    </div>
+
+    <div id="sale" class="tab-content" th:classappend="${currentTab == 'sale'} ? 'active'">
+        <div th:each="sale : ${sales?.content}" class="card clickable-card"
+             th:data-url="@{/orders/{id}(id=${sale.orderId})}">
+            <div class="updated-at" th:text="${#temporals.format(sale.updatedAt, 'yy-MM-dd')}">25-01-01</div>
+            <div class="status" th:text="${sale.status}">거래 완료</div>
+            <div class="card-body">
+                <img class="card-img" th:src="${sale.imageUrl}" alt="Product Image"/>
+                <div class="product-info">
+                    <div class="price" th:text="${#numbers.formatInteger(sale.amount, 1, 'COMMA')} + '원'">0원</div>
+                    <div class="title" th:text="${sale.title}">상품명</div>
+                    <div>구매자: <span th:text="${sale.buyerNickname}">222</span></div>
+                    <div>거래방식: <span th:text="${sale.deliveryMethod}">직거래</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="pagination" th:if="${sales != null and sales.totalPages > 1}">
+            <a th:each="i : ${#numbers.sequence(0, sales.totalPages - 1)}"
+               th:href="@{/shop/{id}/transactions(id=${headerData.shopOwnerId}, tab='sale', page=${i})}"
+               th:text="${i + 1}"
+               th:classappend="${i == sales.number} ? 'active'"></a>
+        </div>
+    </div>
+    <script th:src="@{/js/shop/transaction-list.js}"></script>
+</div>
+
+</body>
+</html>

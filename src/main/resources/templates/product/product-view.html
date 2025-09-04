@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <title>상품 상세</title>
+    <link rel="stylesheet" href="/css/product/product-view.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.portone.io/v2/browser-sdk.js"></script>
+</head>
+<body>
+<div layout:fragment="content">
+    <div id="product-view-data" th:data-product-json="${product.getProductJson()}" class="d-none"></div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="product-top">
+                <div class="product-detail">
+                    <div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}"></div>
+                    <div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
+
+                    <div class="product-image-container">
+                        <button class="slider-button prev-button" id="prevBtn">&#10094;</button>
+                        <img id="mainImage" th:src="${product.images.isEmpty() ? '/images/default.png' : product.images[0].imageUrl}" alt="상품 이미지" class="product-image"/>
+                        <button class="slider-button next-button" id="nextBtn">&#10095;</button>
+                    </div>
+
+                    <div class="product-info">
+                        <h2 class="card-title" th:text="${product.title}">상품 제목</h2>
+                        <p>
+                            <strong>가격:</strong>
+                            <span th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')} + '원'">0원</span>
+                        </p>
+                        <p>
+                            <strong>상점:</strong>
+                            <a th:href="@{/shop/{id}(id=${product.sellerId})}" class="shop-link">
+                                <i class="bi bi-shop"></i>
+                                <span th:if="${product.sellerBanned}" class="text-danger fw-bold">[판매정지]</span>
+                                <span th:text="${product.nickname != null && product.nickname != '' ? product.nickname : product.sellerId}"></span>
+                            </a>
+                        </p>
+                        <p>
+                            <span th:text="${product.formattedCreatedAt}"></span>
+                            <span class="favorite-count">
+                                ❤️ <span th:text="${product.favoriteCount}">0</span>
+                            </span>
+                        </p>
+
+                        <div class="action-buttons">
+                            <a th:if="${product.isOwner}" th:href="@{'/products/' + ${product.id} + '/edit'}"
+                               class="btn btn-warning">상품 수정</a>
+                            <button th:if="${product.isOwner}" id="wishlistUsersBtn"
+                                    class="btn btn-outline-secondary same-size-btn">
+                                찜한 유저
+                            </button>
+                            <button th:if="${!product.isOwner}" id="favoriteBtn" class="btn btn-outline-danger same-size-btn"
+                                    th:attr="data-product-id=${product.id}, data-logged-in=${loginUser != null}"
+                                    th:text="${product.favorite} ? '찜 취소 💔' : '찜 ❤️'">
+                                찜 상태
+                            </button>
+                            <button th:if="${!product.isOwner}" id="chatBtn" class="btn btn-outline-primary same-size-btn"
+                                    th:data-chat-url="@{/chat/user/{id}(id=${product.sellerId})}"
+                                    th:attr="data-logged-in=${loginUser != null}">
+                                채팅하기
+                            </button>
+                            <button th:if="${!product.isOwner} and ${product.isSelling}" id="paymentBtn"
+                                    class="btn btn-outline-success same-size-btn"
+                                    th:attr="data-logged-in=${loginUser != null}, disabled=${product.sellerBanned ? 'disabled' : null}">
+                                구매하기
+                            </button>
+                        </div>
+                        <div class="text-end mt-3">
+                            <button th:if="${!product.isOwner && loginUser != null}" class="btn btn-danger px-4"
+                                    data-bs-toggle="modal" data-bs-target="#reportProductModal">
+                                신고하기
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="product-bottom product-meta mt-4 pt-3 border">
+                <p>
+                    <strong>상품 설명:</strong>
+                    <span th:text="${product.description}" class="white-space-pre-line">상품 설명</span>
+                </p>
+                <p>
+                    <strong>거래 방식:</strong>
+                    <span class="badge bg-primary badge-method" th:text="${product.dealMethod}">DIRECT</span>
+                </p>
+                <div th:if="${product.dealMethod == '택배거래'}">
+                    <strong>배송비 </strong>
+                    <span>
+                        일반: <span th:text="${#numbers.formatInteger(product.normalDeliveryFee, 3, 'COMMA')} + '원'">0원</span>
+                         | 반값•알뜰 <span th:text="${#numbers.formatInteger(product.cheapDeliveryFee, 3, 'COMMA')} + '원'">0원</span>
+                    </span>
+                </div>
+                <p>
+                    <strong>판매 상태:</strong>
+                    <span class="badge bg-success badge-method" th:text="${product.status}">SELLING</span>
+                </p>
+                <p>
+                    <strong>카테고리:</strong>
+                    <a th:href="@{/products/category/{id}(id=${product.categoryId})}"
+                       class="text-decoration-none text-primary"
+                       th:text="${product.categoryName}">카테고리명</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="wishlistUsersModal" tabindex="-1" aria-labelledby="wishlistUsersModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="wishlistUsersModalLabel">찜한 유저</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+                </div>
+                <div class="modal-body" id="wishlistUsersList"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="reportProductModal" tabindex="-1" aria-labelledby="reportProductModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form class="modal-content" th:action="@{/reports/product}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger" id="reportProductModalLabel">상품 신고</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+                </div>
+
+                <div class="modal-body">
+                    <input type="hidden" name="reportedProductId" th:value="${product.id}" />
+
+                    <div class="mb-3">
+                        <label for="reason" class="form-label">신고 사유</label>
+                        <select class="form-select" id="reason" name="reason" required>
+                            <option value="" selected disabled>사유를 선택해주세요</option>
+                            <option value="상품 정보 부정확">상품 정보 부정확</option>
+                            <option value="거래 금지 품목">거래 금지 품목</option>
+                            <option value="사기 의심">사기 의심</option>
+                            <option value="기타">기타</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">상세 설명 (선택)</label>
+                        <textarea class="form-control" id="description" name="description"
+                                  rows="3" maxlength="500"
+                                  placeholder="자세한 신고 내용을 입력해주세요 (선택)"></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger">신고 제출</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 배송 옵션 선택 모달 -->
+    <div class="modal fade" id="deliveryOptionModal" tabindex="-1" aria-labelledby="deliveryOptionModal" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deliveryOptionModalLabel">거래 방법 선택</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="x"></button>
+                </div>
+                <div class="modal-body">
+                    <p>배송 방법을 선택해주세요.</p>
+                    <button id="selectNormalDelivery" class="btn btn-outline-primary w-100 mb-2">
+                        일반택배 +<span id="normalFeeText"></span>
+                    </button>
+                    <button id="selectCheapDelivery" class="btn btn-outline-success w-100">
+                        반값・알뜰택배 +<span id="cheapFeeText"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 택배 상세 모달 -->
+    <div id="deliveryDetailModal" class="modal fade" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content p-3">
+                <div class="modal-header">
+                    <button id="backToOptionBtn" class="btn btn-outline-secondary btn-sm">← 이전</button>
+                    <h5 class="modal-title">배송 상세 정보</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label><strong>거래방법:</strong> <span id="selectedDeliveryMethod"></span> </label>
+                    </div>
+                    <div id="addressInfo">
+                        <h6>배송지 정보</h6>
+                        <p><strong>수령인:</strong> <span id="recipientName"></span></p>
+                        <p><strong>전화번호:</strong> <span id="recipientPhone"></span></p>
+                        <p><strong>주소:</strong> <span id="recipientAddress"></span></p>
+                        <p><span id="recipientDetailAddress"></span></p>
+                        <div class="text-end mb-2">
+                            <button id="editAddressBtn" class="btn btn-sm btn-outline-primary">변경</button>
+                        </div>
+                    </div>
+                    <div id="cheapDeliveryInfo">
+                        <h6>편의점 수령 정보</h6>
+                        <p><strong>수령인:</strong> <span id="cvsRecipientName"></span></p>
+                        <p><strong>전화번호:</strong> <span id="cvsRecipientPhone"></span></p>
+                        <p><strong>편의점명:</strong> <span id="cvsStoreName"></span></p>
+                        <p><strong>편의점 주소:</strong> <span id="cvsStoreAddress"></span></p>
+                        <div class="text-end mb-2">
+                            <button id="editCvsBtn" class="btn btn-sm btn-outline-primary">변경</button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="deliveryRequest"><strong>요청사항</strong></label>
+                        <textarea id="deliveryRequest" class="form-control" rows="3" placeholder="예) 빠른 배송 부탁드려요"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <h6>총 결제 금액: <span id="finalAmountText" class="text-danger"></span></h6>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="payNowBtn" class="btn btn-success w-100">결제하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 일반 배송지 정보 입력 모달 -->
+    <div class="modal fade" id="deliveryInfoModal" tabindex="-1" aria-labelledby="deliveryInfoModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deliveryInfoModalLabel">배송지 정보 입력</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-labelledby="x"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="deliveryForm">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">이름</label>
+                            <input type="text" class="form-control" id="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">전화번호</label>
+                            <input type="tel" class="form-control" id="phone" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="addressLine1" class="form-label">주소</label>
+                            <input type="text" class="form-control" id="addressLine1" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="addressLine2" class="form-label">상세주소</label>
+                            <input type="text" class="form-control" id="addressLine2">
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">완료</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 편의점 정보 입력 모달 -->
+    <div class="modal fade" id="cvsInfoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content p-3">
+                <div class="modal-header">
+                    <h5 class="modal-title">편의점 정보 입력</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="cvsForm">
+                        <div class="mb-3">
+                            <label for="cvsName" class="form-label">이름</label>
+                            <input type="text" class="form-control" id="cvsName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="cvsPhone" class="form-label">전화번호</label>
+                            <input type="tel" class="form-control" id="cvsPhone" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="cvsStoreNameInput" class="form-label">편의점명</label>
+                            <input type="text" class="form-control" id="cvsStoreNameInput" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="cvsStoreAddressInput" class="form-label">편의점 주소</label>
+                            <input type="text" class="form-control" id="cvsStoreAddressInput" readonly>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">완료</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 카카오 지도 모달 -->
+    <div class="modal fade" id="placeSearchModal" tabindex="-1" aria-labelledby="placeSearchModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content map-modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="placeSearchModalLabel">편의점 위치 검색</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="d-flex w-100 h-100">
+                        <!-- 지도 영역 -->
+                        <div id="map"></div>
+
+                        <!-- 검색 및 결과 영역 -->
+                        <div id="menu_wrap" class="bg-white p-3 overflow-auto">
+                            <div class="option mb-3">
+                                <form id="searchForm">
+                                    <label for="keyword">키워드:</label>
+                                    <input type="text" id="keyword" class="form-control my-2" placeholder="예: CU, GS25">
+                                    <button type="submit" class="btn btn-outline-primary btn-sm">검색하기</button>
+                                </form>
+                            </div>
+                            <hr>
+                            <ul id="placesList" class="list-group mb-3"></ul>
+                            <div id="pagination" class="d-flex justify-content-center"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/product/product-view.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=b7b150ae99b3afdd7be0e1173fcf5e3c&libraries=services&autoload=false"></script>
+    <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+</div>
+</body>
+</html>

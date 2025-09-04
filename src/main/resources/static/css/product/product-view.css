@@ -1,0 +1,151 @@
+.product-top {
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 20px;
+}
+
+.product-bottom {
+    padding-top: 20px;
+}
+
+.product-detail {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 30px;
+    align-items: flex-start;
+}
+
+.product-image-container {
+    flex: 1;
+    position: relative;
+    max-width: 500px;
+}
+
+.product-info {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.shop-link {
+    display: inline-flex;
+    align-items: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #0d6efd;
+    text-decoration: none;
+    background-color: #e8f0fe;
+    padding: 6px 12px;
+    border-radius: 20px;
+    transition: background-color 0.2s ease;
+}
+
+.shop-link:hover {
+    background-color: #d0e2fd;
+    text-decoration: none;
+}
+
+.shop-link i {
+    margin-right: 8px;
+    font-size: 1.2rem;
+}
+
+
+.white-space-pre-line {
+    white-space: pre-line;
+}
+
+.product-image-container {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    border-radius: 10px;
+}
+
+.product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.slider-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    font-size: 20px;
+    z-index: 1;
+}
+
+.action-buttons {
+    margin-top: 20px;
+}
+
+.same-size-btn {
+    min-width: 120px;
+    height: 40px;
+    font-size: 16px;
+    margin-right: 10px;
+}
+
+.prev-button {
+    left: 10px;
+}
+
+.next-button {
+    right: 10px;
+}
+
+.product-meta {
+    margin-top: 20px;
+}
+
+.badge {
+    padding: 5px 10px;
+    border-radius: 5px;
+    color: white;
+}
+
+.bg-primary {
+    background-color: #007bff;
+}
+
+.bg-success {
+    background-color: #28a745;
+}
+
+/* 찜(하트) 카운트 스타일 */
+.favorite-count {
+    margin-left: 10px;
+    color: red;
+    font-weight: bold;
+}
+
+/* 카카오 지도 모달 높이 */
+.map-modal-content {
+    height: 90vh;
+}
+
+/* 지도 영역 크기 */
+#map {
+    width: 70%;
+    height: 100%;
+}
+
+/* 지도 검색/결과 영역 크기 */
+#menu_wrap {
+    width: 30%;
+    height: 100%;
+}
+
+.map-infowindow-content {
+    padding: 5px;
+    /*z-index: 1; /* z-index가 필요하다면 유지 */
+}

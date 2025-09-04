@@ -1,0 +1,9 @@
+.highlight-keyword {
+    font-weight: bold;
+    color: #007bff; /* 파란색 계열 */
+}
+
+.highlight-count {
+    font-weight: bold;
+    color: #28a745; /* 초록색 계열 */
+}

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title layout:title-pattern="$CONTENT_TITLE | Second HAND">SecondHand</title>
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+</head>
+<body th:data-is-logged-in="${loginUser != null}">
+<!-- 상단 고정 네비게이션 -->
+<header class="bg-light py-3 border-bottom fixed-top shadow-sm">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <!-- 왼쪽: 로고 -->
+            <a class="navbar-brand text-dark text-decoration-none fw-bold logo"
+               th:href="@{/}">
+                SecondHand
+            </a>
+
+            <!-- 중앙: 메뉴-->
+            <div class="d-flex align-items-center gap-3 flex-grow-1 justify-content-center">
+                <form th:action="@{/search}" method="get" class="d-flex search-form">
+                    <input class="form-control me-2" type="search" name="keyword"
+                           th:value="${keyword}" placeholder="상품명, @상점명 입력" aria-label="Search">
+                    <button class="btn btn-outline-secondary btn-sm" type="submit">
+                        <i class="bi bi-search"></i> <!-- 돋보기 아이콘-->
+                    </button>
+                </form>
+            </div>
+
+            <!-- 오른쪽: 사용자 액션, 일반 유저 전용 메뉴 -->
+            <div class="d-flex align-items-center gap-3">
+                <div class="d-flex gap-3"
+                     th:if="${loginUser != null && !#authorization.expression('hasRole(''ADMIN'')')}">
+                    <a class="nav-link text-dark" th:href="@{/shop/{id}(id=${loginUser.id})}">내상점</a>
+                    <a class="nav-link text-dark" th:href="@{/products/new}">상품 등록</a>
+                    <a class="nav-link text-dark position-relative" th:href="@{/templates/chat}">
+                        채팅
+                        <span id="nav-unread-count"
+                              class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            0
+                        </span>
+                    </a>
+                    <a href="#" id="logoutBtn" class="nav-link text-dark">로그아웃</a>
+                </div>
+
+                <!-- 관리자 전용 메뉴 -->
+                <div class="d-flex gap-3"
+                     th:if="${loginUser != null && #authorization.expression('hasRole(''ADMIN'')')}">
+                    <a class="nav-link text-danger fw-bold" th:href="@{/admin/dashboard}">관리자 대시보드</a>
+                    <a class="nav-link text-danger" th:href="@{/admin/products}">상품 관리</a>
+                    <a class="nav-link text-danger" th:href="@{/admin/users}">회원 관리</a>
+                    <a href="#" id="adminLogoutBtn" class="nav-link text-dark">로그아웃</a>
+                </div>
+
+                <!-- 비로그인 사용자 메뉴 -->
+                <div class="d-flex gap-3" th:if="${loginUser == null}">
+                    <a class="nav-link text-dark" href="#" id="loginShopBtn">내상점</a>
+                    <a class="nav-link text-dark" href="#" id="loginUploadBtn">상품 등록</a>
+                    <a class="nav-link text-dark" href="#" id="loginChatBtn">채팅</a>
+                    <a class="nav-item text-dark" href="#" id="loginBtn">로그인/회원가입</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- 자식 페이지가 삽입될 영역 -->
+<main layout:fragment="content" class="container main-content-padding">
+</main>
+
+<!-- 공통 footer -->
+<footer class="text-center mt-5 py-4 border-top">
+    <p class="text-muted">© 2025 SecondHand</p>
+</footer>
+
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="loginModalLabel">로그인/회원가입</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+            </div>
+            <div class="modal-body text-center">
+                <a href="/oauth2/authorization/kakao" class="btn btn-warning w-100 mb-2">카카오로 로그인</a>
+                <a href="/oauth2/authorization/naver" class="btn btn-success w-100">네이버로 로그인</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/js/fragments/layout.js}"></script>
+
+</body>
+</html>

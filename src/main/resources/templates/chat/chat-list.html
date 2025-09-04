@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>채팅 리스트</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+    <link rel="stylesheet" th:href="@{/css/chat/chat-list.css}">
+</head>
+<body>
+<main layout:fragment="content">
+    <div class="chat-page-container">
+        <!-- 채팅방 목록 -->
+        <div id="chat-room-list" class="chat-room-column">
+            <div th:if="${#lists.isEmpty(chatRooms)}">
+                <p>참여 중인 채팅방이 없습니다.</p>
+            </div>
+            <div th:each="room : ${chatRooms}"
+                 class="chat-room-item"
+                 th:attr="data-room-id=${room.roomId}, data-user-id=${room.otherUserId}">
+
+                <div class="chat-info">
+                    <div class="room-title">
+                        <span th:if="${room.otherUserWithdrawn}">탈퇴한 사용자</span>
+                        <span th:if="${!room.otherUserWithdrawn and room.otherUserBanned}">
+                            [판매정지] <span th:text="${room.otherUserNickname != null && room.otherUserNickname != '' ? room.otherUserNickname : room.otherUserId}">닉네임</span>
+                        </span>
+                        <span th:if="${!room.otherUserWithdrawn and !room.otherUserBanned}">
+                            <span th:text="${room.otherUserNickname != null && room.otherUserNickname != '' ? room.otherUserNickname : room.otherUserId}">닉네임</span>
+                        </span>
+                        <span class="badge bg-danger ms-2"
+                              th:if="${room.unreadCount > 0}"
+                              th:text="${room.unreadCount}">1</span>
+                    </div>
+
+                    <div class="last-message-container">
+                        <span class="last-message" th:text="${room.lastMessage}">최근 메시지</span>
+                        <span class="message-time" th:text="${room.formattedTime}">시간</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 채팅창 -->
+        <div id="chat-panel" class="chat-panel-column">
+            <h2 id="chat-with" class="chat-header">채팅을 선택하세요</h2>
+
+            <div id="chat-ui" class="chat-ui-hidden">
+                <div id="chat-box" class="chat-box"></div>
+                <div class="chat-input-row">
+                    <label for="messageInput" class="visually-hidden">메시지 입력</label>
+                    <input id="messageInput" type="text" class="chat-input"/>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>
+<script th:src="@{/js/chat/chat-list.js}"></script>

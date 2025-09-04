@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>상품 관리</title>
+    <link rel="stylesheet" th:href="@{/css/shop/shop-common.css}">
+    <link rel="stylesheet" th:href="@{/css/shop/product-manage.css}">
+</head>
+<body>
+<main layout:fragment="content" class="container mt-4 main-content-padding">
+    <div th:replace="fragments/shop-header :: shopHeader('상품관리')"></div>
+    <table>
+        <thead>
+        <tr>
+            <th>이미지</th>
+            <th>판매 상태</th>
+            <th>상품명</th>
+            <th>가격</th>
+            <th>등록 날짜</th>
+            <th>기능</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="product : ${products}">
+            <td>
+                <img th:src="@{${product.thumbnailUrl}}" alt="상품 이미지">
+            </td>
+            <td th:text="${product.status}"></td>
+            <td th:text="${product.title}">상품명</td>
+            <td th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')} + '원'">0원</td>
+            <td th:text="${product.createdAt}">2025-01-01</td>
+            <td>
+                <div class="actions-buttons">
+                    <a th:href="@{'/products/' + ${product.id} + '/edit'}">
+                        <button class="btn btn-primary btn-sm">수정</button>
+                    </a>
+                    <button class="btn btn-danger btn-sm delete-btn"
+                            th:data-product-id="${product.id}">
+                        삭제
+                    </button>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="pagination" th:if="${products.totalPages > 1}">
+        <!-- 이전 페이지로 이동 -->
+        <a th:if="${products.hasPrevious()}"
+           th:href="@{/products/manage(page=${products.number - 1})}">&lt;</a>
+
+        <!-- 페이지 번호 리스트 -->
+        <a th:each="i : ${#numbers.sequence(0, products.totalPages - 1)}"
+           th:href="@{/products/manage(page=${i})}"
+           th:text="${i + 1}"
+           th:classappend="${i == products.number} ? 'active' ">1</a>
+
+        <!-- 다음 페이지로 이동 -->
+        <a th:if="${products.hasNext()}"
+           th:href="@{/products/manage(page=${products.number + 1})}">&gt;</a>
+    </div>
+
+    <script th:src="@{/js/shop/product-manage.js}"></script>
+</main>
+
+</body>
+</html>

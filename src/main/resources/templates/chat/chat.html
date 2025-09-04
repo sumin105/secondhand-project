@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>채팅</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+    <link rel="stylesheet" th:href="@{/css/chat/chat.css}">
+</head>
+<body th:attr="data-room-id=${viewData.roomId}, data-sender-id=${viewData.loginUser.id}, data-sender-id=${viewData.receiverId}">
+<main layout:fragment="content">
+    <div class="chat-container">
+        <!-- 채팅방 목록 -->
+        <div id="chat-room-list" class="chat-room-list">
+            <div th:if="${#lists.isEmpty(viewData.chatRooms)}">
+                <p class="no-chat-message">참여 중인 채팅방이 없습니다.</p>
+            </div>
+            <div th:each="room : ${viewData.chatRooms}"
+                 class="chat-room-item"
+                 th:attr="data-room-id=${room.roomId}, data-user-id=${room.otherUserId}">
+
+                <div class="chat-info">
+                    <div class="room-title">
+                        <span th:if="${room.otherUserWithdrawn}">탈퇴한 사용자</span>
+                        <span th:if="${!room.otherUserWithdrawn and room.otherUserBanned}">
+                            [판매정지]
+                            <span th:text="${room.otherUserNickname != null && room.otherUserNickname != '' ? room.otherUserNickname : room.otherUserId}">닉네임</span>
+                        </span>
+                        <span th:if="${!room.otherUserWithdrawn and !room.otherUserBanned}">
+                            <span th:text="${room.otherUserNickname != null && room.otherUserNickname != '' ? room.otherUserNickname : room.otherUserId}">닉네임</span>
+                        </span>
+                        <span class="badge bg-danger ms-2"
+                              th:if="${room.unreadCount > 0}"
+                              th:text="${room.unreadCount}">1</span>
+                    </div>
+
+                    <div class="last-message-container">
+                        <span class="last-message" th:text="${room.lastMessage}">최근 메시지</span>
+                        <span class="message-time" th:text="${room.formattedTime}">시간</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 채팅창 -->
+        <div id="chat-panel">
+            <h2 class="text-start mb-4">
+                <a th:href="@{/shop/{id}(id=${receiverId})}" class="text-decoration-none text-dark"
+                   th:if="${viewData.receiverWithdrawn}">
+                    탈퇴한 사용자
+                </a>
+                <a th:href="@{/shop/{id}(id=${receiverId})}" class="text-decoration-none text-dark"
+                   th:if="${!viewData.receiverWithdrawn and viewData.receiverBanned}">
+                    [판매정지]
+                    <span th:text="${viewData.receiverNickname}">닉네임</span>
+                </a>
+                <a th:href="@{/shop/{id}(id=${receiverId})}" class="text-decoration-none text-dark"
+                   th:if="${!viewData.receiverWithdrawn and !viewData.receiverBanned}">
+                    <span th:text="${viewData.receiverNickname}">닉네임</span>
+                </a>
+            </h2>
+
+            <div id="chat-box"></div>
+            <div class="d-flex gap-2 align-items-center">
+                <label for="messageInput" class="visually-hidden">메시지 입력</label>
+                <input type="text" id="messageInput" class="form-control" placeholder="메시지 입력"/>
+
+                <!-- 사진 -->
+                <label for="imageInput" id="imageUploadLabel" class="btn btn-outline-secondary mb-0">
+                    <i class="bi bi-image"></i>
+                </label>
+                <input type="file" id="imageInput" accept="image/*" class="d-none" />
+
+                <button id="sendMessageBtn" class="btn btn-primary">보내기</button>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+</body>
+</html>
+<script th:src="@{/js/chat/chat.js}"></script>
+

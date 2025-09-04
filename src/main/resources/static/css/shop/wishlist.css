@@ -1,0 +1,90 @@
+.product-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.product-card {
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 10px;
+    width: 200px;
+    text-decoration: none;
+    color: inherit;
+    transition: box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 0; /* 찜페이지 기존 마진 제거 */
+}
+
+.product-card:hover {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.product-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 5px;
+    background-color: #f4f4f4;
+}
+
+.product-card h3, .product-card h4 {
+    width: 100%;
+    font-size: 16px;
+    margin: 10px 0 6px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+    padding: 0 4px;
+    box-sizing: border-box;
+}
+
+.card-bottom {
+    margin-top: auto;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #555;
+}
+
+.card-bottom .price {
+    font-weight: bold;
+    color: #000;
+}
+
+.sold-out-overlay {
+    position: relative;
+    width: 100%;
+}
+
+.sold-out-overlay img {
+    display: block;
+    width: 100%;
+    border-radius: 5px;
+}
+
+.sold-out-label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 5px;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    display: block; /* 전체 영역 클릭 가능 */
+}

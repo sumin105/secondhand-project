@@ -1,0 +1,79 @@
+.shop-header {
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+.pre-line-text {
+    white-space: pre-line;
+}
+
+.shop-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+    flex-wrap: wrap; /* 줄바꿈 대응 */
+}
+
+.shop-actions button {
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    background-color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+
+    min-width: 100px;  /* ✅ 버튼 너비 통일 */
+    flex: 1 1 100px;   /* ✅ 공간 균등 분배 및 줄바꿈 대응 */
+    text-align: center;
+    max-width: 120px;  /* ✅ 너무 길어지지 않게 제한 (선택) */
+}
+
+.shop-actions .active-button {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+    font-weight: bold;
+}
+
+.shop-actions button:hover {
+    background-color: #f8f8f8;
+}
+
+.shop-actions .active-button:hover {
+    background-color: #007bff;
+    color: white;
+    cursor: default;
+}
+
+.pagination {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.pagination a, .pagination span {
+    display: inline-block;
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #333;
+    transition: background-color 0.2s, color 0.2s;
+    font-size: 14px;
+}
+
+.pagination a:hover {
+    background-color: #f0f0f0;
+}
+
+.pagination .active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+    pointer-events: none;
+}

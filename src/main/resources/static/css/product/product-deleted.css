@@ -1,0 +1,22 @@
+.deleted-image-container {
+    position: relative;
+}
+
+.deleted-image {
+    filter: grayscale(100%);
+    opacity: 0.5;
+}
+
+.deleted-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    pointer-events: none;
+}

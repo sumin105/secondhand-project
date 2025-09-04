@@ -1,0 +1,62 @@
+.navbar-brand {
+    font-size: 2rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.nav-link {
+    font-size: 1rem;
+}
+
+.nav-link:hover {
+    text-decoration: underline;
+    color: #007bff;
+}
+
+.btn-outline-primary {
+    border-radius: 4px;
+}
+
+form input[type="search"] {
+    height: 32px;
+    font-size: 0.9rem;
+    padding: 0 10px;
+}
+
+form button {
+    height: 32px;
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.navbar-brand.logo {
+    font-size: 2rem !important;
+    letter-spacing: 1px;
+    cursor: pointer;
+}
+
+.search-form {
+    max-width: 300px;
+    width: 100%;
+}
+
+/* 숨겨진 로그아웃 폼 */
+.hidden-form {
+    display: none;
+}
+
+/* 고정된 헤더에 내용이 가려지지 않도록 패딩 추가 */
+.main-content-padding {
+    padding-top: 100px;
+}
+
+/* 안 읽은 채팅 메시지 뱃지 */
+#nav-unread-count {
+    /* 초기에는 숨김 처리; layout.js에서 필요할 때 보이도록 만듭니다 */
+    display: none;
+    font-size: 0.75rem;
+    min-width: 18px;
+    height: 18px;
+    line-height: 18px; /* 숫자 세로 중앙 정렬 */
+}

@@ -1,0 +1,279 @@
+.order-wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 40px 0;
+}
+
+.order-container {
+    background: #fff;
+    padding: 30px;
+    max-width: 700px;
+    width: 100%;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    font-weight: bold;
+    font-size: 1.1em;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 10px;
+}
+
+.card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px 20px; /* 좌우, 상하 동일하게 */
+    margin-bottom: 20px;
+    background-color: #ffffff;
+    box-sizing: border-box;
+}
+
+.card dl {
+    margin: 0; /* dl의 기본 margin 제거 */
+}
+
+.card dd:last-child {
+    margin-bottom: 0; /* 마지막 dd가 하단 여백을 추가하지 않도록 */
+}
+
+.card dd:first-child {
+    margin-top: 0; /* 첫 dd의 상단 여백도 제거 */
+}
+
+section {
+    margin-bottom: 20px;
+}
+
+.section-title {
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-bottom: 5px;
+    margin-left: 5px;
+    margin-top: 30px;
+}
+
+.product-info {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+}
+
+.product-info img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.product-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.product-name {
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-bottom: 5px;
+}
+
+.product-price {
+    color: #007BFF;
+    font-weight: bold;
+}
+
+dt {
+    font-weight: bold;
+    margin-top: 8px;
+}
+
+dd {
+    margin-left: 15px;
+    margin-bottom: 5px;
+}
+
+.status {
+    margin-bottom: 10px;
+    font-weight: bold;
+    font-size: 1.2em;
+    color: #198754;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    margin-top: 5px;
+    font-size: 0.95em;
+    box-sizing: border-box;
+}
+
+form label {
+    display: block;
+    margin-bottom: 15px;
+    font-weight: bold;
+    color: #333;
+}
+
+button[type="submit"] {
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+button[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+/* 메시지 박스 스타일 */
+.message-box {
+    padding: 10px 40px 10px 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    position: relative;
+    font-weight: 600;
+}
+
+/* 성공 메시지 녹색 배경 */
+.message-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+/* 에러 메시지 빨간 배경 */
+.message-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* 닫기 버튼 스타일 */
+.message-close-btn {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    background: transparent;
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    color: inherit;
+    cursor: pointer;
+    line-height: 1;
+}
+
+hr.margin-custom {
+    margin: 10px 0;
+}
+form.margin-top-custom {
+    margin-top: 15px;
+}
+a.tracking-link {
+    color: #007bff;
+    text-decoration: underline;
+}
+
+.order-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.order-actions a,
+.order-actions button {
+    width: 100%;
+    flex: 1;
+    padding: 12px 0;
+    text-align: center;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+    cursor: pointer;
+    line-height: 1.5;
+    box-sizing: border-box;
+    display: flex; /* 중요: 가운데 정렬을 위해 flex 사용 */
+    align-items: center; /* 수직 중앙 정렬 */
+    justify-content: center; /* 수평 중앙 정렬 */
+}
+
+.underline-link {
+    color: #007bff;
+    text-decoration: underline;
+}
+
+.full-btn {
+    width: 100%;
+    background-color: #198754;
+    color: white;
+    border: none;
+    padding: 12px 0;
+    border-radius: 5px;
+    font-size: 1em;
+    cursor: pointer;
+}
+
+.section-hr {
+    margin: 10px 0;
+}
+
+.form-flex {
+    flex: 1;
+}
+
+/* 공통 버튼 스타일 */
+.btn-common {
+    width: 100%;
+    padding: 12px 0;
+    font-size: 1em;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    text-decoration: none;
+    color: white;
+    line-height: 1.5;
+    font-family: inherit;
+}
+
+/* 배송조회 버튼 */
+.btn-track {
+    background-color: #6c757d;
+}
+
+/* 배송완료 버튼 */
+.btn-confirm {
+    background-color: #dc3545;
+}
+
+/* 거래정보 카드 내 배송완료 버튼 감싸는 div */
+.right-align {
+    margin-top: 15px;
+    width: 100%; /* 카드 너비에 맞추기 */
+    display: flex;
+}
+
+.right-align form {
+    flex: 1;
+}
+
+.right-align button {
+    height: 100%;
+    padding: 12px 0;
+}

@@ -1,0 +1,105 @@
+.review-box {
+    border: 1px solid #ccc;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.rating {
+    color: #ffcc00;
+    font-size: 1.2rem;
+}
+
+.review-tags {
+    margin-top: 0.5rem;
+}
+
+.tag {
+    background-color: #f1f1f1;
+    border-radius: 4px;
+    padding: 0.2rem 0.5rem;
+    margin-right: 0.4rem;
+    font-size: 0.85rem;
+}
+
+.review-date {
+    font-size: 0.85rem;
+    color: #888;
+}
+
+.review-content {
+    margin-top: 0.7rem;
+}
+
+.load-more-button {
+    text-align: center;
+    margin-top: 1rem
+}
+
+.review-product {
+    margin-top: 0.3rem;
+    font-weight: 600;
+}
+
+.product-link {
+    display: inline-block;
+    padding: 0.4rem 0.9rem;
+    border: 1.5px solid #4a90e2; /* 진한 파란 계열 */
+    border-radius: 10px;
+    background-color: #f5f9ff; /* 아주 연한 푸른빛 배경 */
+    color: #3366cc;
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    box-shadow: 0 2px 6px rgba(74, 144, 226, 0.15);
+    transition: all 0.25s ease-in-out;
+    cursor: pointer;
+}
+
+.product-link:hover,
+.product-link:focus {
+    background-color: #e4f0ff;
+    border-color: #2a5bb8;
+    box-shadow: 0 6px 14px rgba(42, 91, 184, 0.25);
+    color: #1a3d80;
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+
+
+.product-link:hover {
+    background-color: #cce0ff; /* 조금 더 진한 배경 */
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3); /* 그림자 효과 */
+    text-decoration: none;
+}
+
+.deleteBtn {
+    margin-top: 0.5rem;
+    text-align: right;
+}
+
+.btn-delete {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.btn-delete:hover {
+    background-color: #c82333;
+}
+
+.writer-link {
+    font-weight: bold;
+    text-decoration: none;
+    color: inherit;
+}

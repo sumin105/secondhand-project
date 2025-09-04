@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <title>상점 후기</title>
+    <link rel="stylesheet" th:href="@{/css/shop/shop-common.css}">
+    <link rel="stylesheet" th:href="@{/css/review/review.css}">
+</head>
+<body>
+<div layout:fragment="content" class="container mt-4 main-content-padding">
+    <div th:replace="fragments/shop-header :: shopHeader('후기')"></div>
+
+    <div th:if="${reviews.isEmpty()}">
+        <p>아직 작성된 후기가 없습니다.</p>
+    </div>
+
+    <div id="review-container">
+        <div th:each="review : ${reviews}" class="review-box">
+            <div class="review-header">
+                <a th:href="@{/shop/{id}(id=${review.writerId})}"
+                   th:text="${review.writerNickname}"
+                   class="writer-link">
+                </a>
+                <div class="rating">
+                    <span th:each="i : ${#numbers.sequence(1, review.rating)}">⭐</span>
+                </div>
+            </div>
+
+            <div class="review-product">
+                <a th:href="@{/products/{id}(id=${review.getProductId()})}" th:text="${review.productTitle}"
+                   class="product-link"></a>
+            </div>
+
+            <div class="review-tags" th:if="${review.tags != null}">
+                <span th:each="tag : ${review.tags}" class="tag" th:text="${tag.label}"></span>
+            </div>
+
+            <div class="review-content" th:if="${review.content != null}" th:text="${review.content}">후기</div>
+
+            <div class="review-date" th:text="${#temporals.format(review.createdAt, 'yyyy.MM.dd')}">
+                2025.06.10
+            </div>
+
+            <div class="deleteBtn" th:if="${loginUser != null and loginUser.id == review.writerId}">
+                <button type="button" class="btn-delete delete-review-btn" th:data-review-id="${review.id}">삭제하기
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="pagination" th:if="${reviews.totalPages > 1}">
+        <a th:if="${reviews.hasPrevious()}"
+           th:href="@{/shop/{id}/reviews(id=${userId}, page=${reviews.number - 1})}">&lt;</a>
+
+        <a th:each="i : ${#numbers.sequence(0, reviews.totalPages - 1)}"
+           th:href="@{/shop/{id}/reviews(id=${userId}, page=${i})}"
+           th:text="${i + 1}"
+           th:classappend="${i == reviews.number} ? 'active'">1</a>
+
+        <a th:if="${reviews.hasNext()}"
+           th:href="@{/shop/{id}/reviews(id=${userId}, page=${reviews.number + 1})}">&gt;</a>
+    </div>
+
+    <input type="hidden" id="userId" th:value="${userId}"/>
+
+    <script th:src="@{/js/review/review.js}"></script>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <title>찜 목록</title>
+    <link rel="stylesheet" th:href="@{/css/shop/shop-common.css}">
+    <link rel="stylesheet" th:href="@{/css/shop/wishlist.css}">
+</head>
+<body>
+<main layout:fragment="content" class="container mt-4 main-content-padding">
+    <div th:replace="fragments/shop-header :: shopHeader('찜')"></div>
+
+    <div class="product-list" th:if="${favorites.content.size() > 0}">
+        <a th:each="favorite : ${favorites.content}"
+           th:href="@{/products/{id}(id=${favorite.productId})}"
+           class="product-card">
+
+            <div class="sold-out-overlay">
+                <img th:src="${favorite.images[0]?.imageUrl}" alt="상품이미지"/>
+                <div class="sold-out-label"
+                     th:if="${favorite.productStatus != 'SELLING'}"
+                     th:text="${favorite.productStatus == 'RESERVED' ? '예약중' : '판매완료'}">
+                </div>
+            </div>
+
+            <h3 th:text="${favorite.productTitle}">상품 제품</h3>
+
+            <div class="card-bottom">
+                <p class="price" th:text="${#numbers.formatInteger(favorite.productPrice, 3, 'COMMA')} + '원'">가격</p>
+                <p th:text="${favorite.productCreatedAt != null ? @timeUtil.formatRelative(favorite.productCreatedAt) : ''}"></p>
+            </div>
+
+        </a>
+    </div>
+    <div th:unless="${favorites.content.size() > 0}">
+        <p>찜한 상품이 없습니다.</p>
+    </div>
+
+    <div class="pagination" th:if="${favorites.totalPages > 1}">
+        <a th:if="${favorites.hasPrevious()}"
+           th:href="@{/shop/{id}/wishlist(id=${headerData.shopOwnerId}, page=${favorites.number - 1})}">&lt;</a>
+
+        <a th:each="i : ${#numbers.sequence(0, favorites.totalPages - 1)}"
+           th:href="@{/shop/{id}/wishlist(id=${headerData.shopOwnerId}, page=${i})}"
+           th:text="${i + 1}"
+           th:classappend="${i == favorites.number} ? 'active'">1</a>
+
+        <a th:if="${favorites.hasNext()}"
+           th:href="@{/shop/{id}/wishlist(id=${headerData.shopOwnerId}, page=${favorites.number + 1})}">&gt;</a>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>주문서</title>
+    <link rel="stylesheet" href="/css/order/order.css">
+</head>
+<body>
+<div layout:fragment="content" class="order-wrapper main-content-padding">
+    <div class="order-container">
+        <div th:if="${successMessage}" class="message-box message-success" id="successMessageBox">
+            <button type="button" class="message-close-btn" id="closeSuccess">×</button>
+            <p th:text="${successMessage}"></p>
+        </div>
+        <div th:if="${errorMessage}" class="message-box message-error" id="errorMessageBox">
+            <button type="button" class="message-close-btn" id="closeError">×
+            </button>
+            <p th:text="${errorMessage}"></p>
+        </div>
+
+        <header>
+            <div th:text="${viewData.formattedCreatedAt}">
+                2025.01.01
+            </div>
+            <div>주문번호: <span th:text="${viewData.orderId}">1</span></div>
+        </header>
+
+        <!-- 거래 상태 카드 -->
+        <section class="card">
+            <div class="status">
+                <span th:text="${viewData.orderStatus}">결제 완료</span>
+            </div>
+            <hr class="section-hr">
+            <a th:href="|/products/${viewData.product.id}?fromOrder=true|" class="product-info">
+                <img th:src="@{${viewData.product.thumbnailUrl}}" alt="상품 이미지"/>
+                <div class="product-details">
+                    <div class="product-name" th:text="${viewData.product.title}"></div>
+                    <div class="product-price"
+                         th:text="${#numbers.formatInteger(viewData.payment.amount, 3, 'COMMA')} + '원'"></div>
+                </div>
+            </a>
+        </section>
+        <!-- 운송장 정보가 있으면 노출 -->
+        <div class="order-actions" th:if="${viewData.showTrackingDeliveryButton}">
+            <a class="btn-common btn-track" th:href="${viewData.delivery.trackingUrl}" target="_blank">배송 조회</a>
+            <form th:if="${viewData.showCompleteDeliveryButton}"
+                  th:action="@{/orders/{id}/status(id=${viewData.orderId})}" method="post" class="form-flex">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <input type="hidden" name="action" value="completeDelivery" />
+                <button type="submit" class="btn-common btn-confirm">배송 완료</button>
+            </form>
+        </div>
+
+        <!-- 거래 확정 버튼-->
+        <div class="order-actions" th:if="${viewData.showConfirmOrderButton}">
+            <form th:action="@{/orders/{id}/status(id=${viewData.orderId})}" method="post" class="form-flex">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <input type="hidden" name="action" value="completeOrder" />
+                <button type="submit" class="btn-common btn-confirm">거래 확정</button>
+            </form>
+        </div>
+
+        <!-- 후기 작성 버튼-->
+        <div class="order-actions" th:if="${viewData.showWriteReviewButton}">
+            <a th:href="@{/orders/{id}/reviews/new(id=${viewData.orderId})}" class="btn-common btn-confirm">후기 작성하기</a>
+        </div>
+
+        <!-- 상대 후기 보러가기 버튼-->
+        <div class="order-actions" th:if="${viewData.showViewOtherReviewButton}">
+            <a th:href="@{/shop/{myId}/reviews(myId=${viewData.buyer.id})}" class="btn-common btn-confirm">상대방 후기 확인하기</a>
+        </div>
+
+        <!-- 내가 쓴 후기 보러가기 버튼-->
+        <div class="order-actions" th:if="${viewData.showViewMyReviewButton}">
+            <a th:href="@{/shop/{otherId}/reviews(otherId=${viewData.seller.id})}" class="btn-common btn-confirm">내 후기 확인하기</a>
+        </div>
+
+        <div class="section-title">결제 정보</div>
+        <section class="card">
+            <dl>
+                <dd>상품 금액: <span th:text="${#numbers.formatInteger(viewData.payment.amount, 3, 'COMMA')} + '원'"></span></dd>
+                <dd th:if="${viewData.payment.deliveryFee != null}">배송비: <span th:text="${#numbers.formatInteger(viewData.payment.deliveryFee, 3, 'COMMA')} + '원'"></span></dd>
+                <dd>결제 금액: <span th:text="${#numbers.formatInteger(viewData.payment.finalAmount, 3, 'COMMA')} + '원'"></span></dd>
+                <dd>결제 수단: <span th:text="${viewData.payment.payMethod}"></span></dd>
+            </dl>
+        </section>
+
+        <div class="section-title" th:if="${viewData.delivery != null}">배송지 정보</div>
+        <section class="card" th:if="${viewData.delivery != null}">
+            <dl>
+                <dd>수령인: <span th:text="${viewData.delivery.recipientName}"></span></dd>
+                <dd>전화번호: <span th:text="${viewData.delivery.recipientPhone}"></span></dd>
+                <dd th:if="${viewData.delivery.address != null}">주소: <span th:text="${'(' + viewData.delivery.postCode + ') ' + viewData.delivery.address}"></span></dd>
+                <dd th:if="${viewData.delivery.detailAddress != null}">상세주소: <span th:text="${viewData.delivery.detailAddress}"></span></dd>
+                <dd th:if="${viewData.delivery.storeName != null}">편의점: <span th:text="${viewData.delivery.storeName}"></span><br/>주소: <span th:text="${viewData.delivery.storeAddress}"></span></dd>
+                <dd th:if="${viewData.delivery.requestMessage != null}">요청사항: <span th:text="${viewData.delivery.requestMessage}"></span></dd>
+            </dl>
+        </section>
+
+        <div class="section-title">거래 정보</div>
+        <section class="card">
+            <dl>
+                <dd>주문번호 <span th:text="${viewData.orderId}"></span></dd>
+                <dd>판매자: <a th:href="@{/shop/{id}(id=${viewData.seller.id})}" th:text="${viewData.seller.nickname}"></a></dd>
+                <dd>거래 방법: <span th:text="${viewData.payment.deliveryMethod}"></span></dd>
+                <dd th:if="${viewData.delivery != null}">배송 현황: <span th:text="${viewData.delivery.deliveryStatus}"></span></dd>
+                <dd th:if="${viewData.showEnteredTrackingInfo}">택배사: <span th:text="${viewData.delivery.deliveryCompany}"></span></dd>
+                <dd th:if="${viewData.showEnteredTrackingInfo}">운송장번호: <a th:href="${viewData.delivery.trackingUrl}" th:text="${viewData.delivery.trackingNumber}" class="underline-link" target="_blank"></a></dd>
+            </dl>
+        </section>
+    </div>
+</div>
+<script th:src="@{/js/order/order.js}"></script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>상품 신고 내역</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+</head>
+<body>
+<main layout:fragment="content">
+    <div class="container">
+        <h2>상품 신고 내역</h2>
+
+        <p><strong>상품명:</strong> <a th:href="@{/products/{id}(id=${viewData.productId})}" th:text="${viewData.productTitle}"></a></p>
+
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>신고자</th>
+                <th>신고 사유</th>
+                <th>설명</th>
+                <th>신고일</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="report, i : ${viewData.reports}">
+                <td th:text="${i.index + 1}">1</td>
+                <td th:text="${report.reporterNickname}">홍길동</td>
+                <td th:text="${report.reason}">부적절한 내용</td>
+                <td th:text="${report.description} ?: '없음'">-</td>
+                <td th:text="${#temporals.format(report.createdAt, 'yyyy-MM-dd HH:mm')}">날짜</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(viewData.reports)}">
+                <td colspan="5" class="text-center text-muted">신고 내역이 없습니다.</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <a th:href="@{/admin/products}" class="btn btn-secondary mt-3">← 목록으로</a>
+    </div>
+</main>
+</body>
+</html>

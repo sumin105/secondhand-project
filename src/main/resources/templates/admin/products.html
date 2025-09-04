@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>상품 관리</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/products.css}">
+</head>
+<body>
+<main layout:fragment="content">
+    <div class="container">
+        <h2>상품 관리</h2>
+
+        <table class="table table-bordered table-hover">
+            <thead class="table-light">
+            <tr>
+                <th>#</th>
+                <th>제목</th>
+                <th>판매자</th>
+                <th>등록일</th>
+                <th>상태</th>
+                <th>신고</th>
+                <th>관리</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="product, i : ${products}">
+                <td th:text="${i.index + 1}">1</td>
+                <td>
+                    <a th:href="@{/products/{id}(id=${product.id})}"
+                       th:text="${product.title}">상품제목</a>
+                </td>
+                <td th:text="${product.sellerNickname}">판매자</td>
+                <td th:text="${#temporals.format(product.createdAt, 'yyyy-MM-dd HH:mm')}">날짜</td>
+                <td>
+                    <span th:class="'status-badge status-' + ${product.status}" th:text="${product.status}">판매중</span>
+                </td>
+                <td>
+                    <a th:if="${product.reportCount > 0}"
+                       th:href="@{/admin/products/{id}/reports(id=${product.id})}"
+                       th:text="${product.reportCount}">0</a>
+                    <span th:if="${product.reportCount == 0}">0</span>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-outline-danger delete-product-btn"
+                            th:data-product-id="${product.id}">
+                        삭제
+                    </button>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(products)}">
+                <td colspan="6" class="text-center text-muted">등록된 상품이 없습니다.</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <nav class="pagination-container" th:if="${products.totalPages > 1}">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${products.first} ? 'disabled'">
+                    <a class="page-link" th:href="@{/admin/products(page=${products.number - 1})}">이전</a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, products.totalPages - 1)}"
+                    th:classappend="${i == products.number} ? 'active'">
+                    <a class="page-link" th:href="@{/admin/products(page=${i})}" th:text="${i + 1}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${products.last} ? 'disabled'">
+                    <a class="page-link" th:href="@{/admin/products(page=${products.number + 1})}">다음</a>
+                </li>
+            </ul>
+        </nav>
+        <script th:src="@{/js/admin/products.js}"></script>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,56 @@
+.card { /* 모든 카드 높이 일정하게 유지 */
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-img-top { /* 이미지 비율 유지하면서 고정 높이 안에 꽉 차게 만듦 */
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 5px;
+    background-color: #f4f4f4;
+}
+
+.card-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+.card-body { /* 카드 내용이 아래에 균일하게 배치되도록 설정 */
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.sold-out-overlay {
+    position: relative;
+}
+
+.sold-out-overlay img {
+    width: 100%;
+    display: block;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 5px;
+    background-color: #f4f4f4;
+}
+
+.sold-out-label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6); /* 어두운 반투명 배경 */
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 5px;
+}

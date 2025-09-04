@@ -1,0 +1,84 @@
+.form-container {
+    max-width: 700px;
+    margin: 50px auto;
+    padding: 40px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.image-preview {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 15px;
+}
+
+.image-preview div {
+    position: relative;
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.image-preview img {
+    max-width: 100px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+.image-preview button {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.preview-image {
+    max-width: 100px;
+    border-radius: 8px;
+}
+
+.image-wrapper {
+    position: relative;
+    display: inline-block;
+    margin-right: 10px;
+}
+
+/* 새로 추가되는 이미지 미리보기 컨테이너 */
+.new-image-wrapper {
+    position: relative;
+    display: inline-block; /* 이미지들이 옆으로 나열되도록 */
+    margin: 5px;
+}
+
+/* 새로 추가되는 이미지 미리보기 썸네일 */
+.new-image-wrapper .preview-image {
+    max-width: 100px;
+    border-radius: 8px;
+}
+
+/* 새로 추가되는 이미지의 삭제 버튼 */
+.new-image-wrapper .btn-remove-new {
+    position: absolute;
+    top: -5px;  /* 위치 미세 조정 */
+    right: -5px; /* 위치 미세 조정 */
+    border-radius: 50%; /* 동그란 버튼 */
+    width: 20px;
+    height: 20px;
+    line-height: 1;
+    padding: 0;
+}
+
+.remove-preview-btn {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    line-height: 1;
+    padding: 0;
+}

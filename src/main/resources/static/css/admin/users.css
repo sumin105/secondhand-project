@@ -1,0 +1,55 @@
+body {
+    padding: 2rem;
+    background-color: #f8f9fa;
+}
+
+h2 {
+    margin-bottom: 1.5rem;
+}
+
+table {
+    background-color: #fff;
+}
+
+.table td, .table th {
+    vertical-align: middle;
+}
+
+.role-admin {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.role-user {
+    color: #0d6efd;
+}
+
+.pagination {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.pagination a, .pagination span {
+    display: inline-block;
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #333;
+    transition: background-color 0.2s, color 0.2s;
+    font-size: 14px;
+}
+
+.pagination a:hover {
+    background-color: #f0f0f0;
+}
+
+.pagination .active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+    pointer-events: none;
+}

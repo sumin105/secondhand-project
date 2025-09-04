@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>상품 수정</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/product/product-form.css}" />
+</head>
+<body>
+
+<div layout:fragment="content">
+    <div class="form-container">
+        <h1>상품 수정</h1>
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+        <form id="productEditForm" th:action="@{/products/{id}(id = ${viewData.id})}" method="post" enctype="multipart/form-data">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <input type="hidden" name="_method" value="put"/>
+            <div class="mb-3">
+                <label for="image" class="form-label">상품 이미지 <small class="text-danger">(1장 필수, 최대 5장)</small></label>
+                <input class="form-control" type="file" id="image" name="image" accept="image/*" multiple>
+
+                <div class="image-preview" id="imagePreview">
+                    <!-- 기존 이미지 출력 -->
+                    <div class="existing-image"
+                         th:each="image : ${viewData.images}"
+                         th:id="'existing-image-' + ${image.id}">
+                        <img th:src="@{${image.imageUrl}}" class="preview-image" alt="기존 이미지">
+                        <button type="button" class="btn btn-sm btn-danger btn-remove-existing"
+                                th:attr="data-image-id=${image.id}">×
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="title" class="form-label">상품명</label>
+                <input type="text" class="form-control" id="title" name="title" th:value="${viewData.title}" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="price" class="form-label">가격</label>
+                <input type="number" class="form-control" id="price" name="price" th:value="${viewData.price}" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="description" class="form-label">설명</label>
+                <textarea class="form-control"
+                          id="description"
+                          name="description"
+                          rows="8"
+                          maxlength="2000"
+                          placeholder="상품 상태, 구성품, 사용감 등을 2000자 이내로 작성해주세요."
+                          th:text="${viewData.description}"
+                          required></textarea>
+                <div class="text-end">
+                    <small><span id="descCount">0</span>/2000자</small>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="categoryId" class="form-label">카테고리</label>
+                <select class="form-select" id="categoryId" name="categoryId" required>
+                    <option value="">카테고리 선택</option>
+                    <option th:each="category : ${viewData.categories}"
+                            th:value="${category.id}"
+                            th:text="${category.name}"
+                            th:selected="${viewData.categoryId != null} ? ${category.id} == ${viewData.categoryId} : false">
+                    </option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="dealMethod" class="form-label">거래 방식</label>
+                <select class="form-select" id="dealMethod" name="dealMethod" required>
+                    <option value="DIRECT" th:selected="${viewData.dealMethod.name() == 'DIRECT'}">직거래</option>
+                    <option value="DELIVERY" th:selected="${viewData.dealMethod.name() == 'DELIVERY'}">택배거래</option>
+                </select>
+            </div>
+
+            <!-- 배송비 별도일 시 일택, 반택, 배송료 입력란 -->
+            <div id="deliveryFees" class="d-none">
+                <div class="mb-3">
+                    <label for="normalDeliveryFee" class="form-label">일반택배</label>
+                    <input type="number" class="form-control" id="normalDeliveryFee" name="normalDeliveryFee" min="0"
+                           th:value="${viewData.normalDeliveryFee}">
+                </div>
+                <div class="mb-3">
+                    <label for="cheapDeliveryFee" class="form-label">반값•알뜰택배</label>
+                    <input type="number" class="form-control" id="cheapDeliveryFee" name="cheapDeliveryFee" min="0"
+                           th:value="${viewData.cheapDeliveryFee}">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="status" class="form-label">판매 상태</label>
+                <select class="form-select" id="status" name="status" required>
+                    <option value="SELLING" th:selected="${viewData.status.name() == 'SELLING'}">판매 중</option>
+                    <option value="RESERVED" th:selected="${viewData.status.name() == 'RESERVED'}">예약 중</option>
+                    <option value="SOLD" th:selected="${viewData.status.name() == 'SOLD'}">판매 완료</option>
+                </select>
+            </div>
+
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary">수정하기</button>
+            </div>
+        </form>
+
+        <script th:src="@{/js/product/product-edit.js}"></script>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>관리자 대시보드</title>
+    <link rel="stylesheet" th:href="@{/css/admin/dashboard.css}">
+</head>
+<body>
+<main layout:fragment="content">
+    <h1>관리자 대시보드</h1>
+
+    <div class="card">
+        <div class="stat">전체 회원 수: <strong th:text="${userCount}">0</strong></div>
+        <div class="stat">전체 상품 수: <strong th:text="${productCount}">0</strong></div>
+        <div class="stat">오늘 등록된 상품 수: <strong th:text="${todayProductCount}">0</strong></div>
+    </div>
+
+    <div class="admin-menu">
+        <a th:href="@{/admin/users}">회원 관리</a>
+        <a th:href="@{/admin/products}">상품 관리</a>
+        <a th:href="@{/admin/reports}">신고 관리</a>
+    </div>
+</main>
+</body>
+</html>

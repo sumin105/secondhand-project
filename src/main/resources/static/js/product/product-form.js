@@ -7,6 +7,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const descCount = document.getElementById('descCount');
     let selectedFiles = [];
 
+    const titleInput = document.getElementById('title');
+    const priceInput = document.getElementById('price');
+    const form = document.querySelector('form');
+    const normalFeeInput = document.getElementById('normalDeliveryFee');
+    const cheapFeeInput = document.getElementById('cheapDeliveryFee');
+
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
     function updateDeliveryFees() {
         if (dealMethodSelect.value === 'DELIVERY') {
             deliveryFeesDiv.classList.remove('d-none');
@@ -58,9 +66,20 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     imageInput.addEventListener('change', function () {
-        const files = Array.from(this.files); // input에서 선택한 파일을 배열로 변환
+        const newFiles = Array.from(this.files); // input에서 선택한 파일을 배열로 변환
+        const validFiles = [];
+
+        // 새로 선택된 파일들 용량 먼저 검사
+        for (const file of newFiles) {
+            if (file.size > MAX_FILE_SIZE) {
+                alert(`'${file.name}' 파일의 용량이 너무 큽니다. (최대 10MB)`);
+                continue; // 용량이 큰 파일 건너뜀
+            }
+            validFiles.push(file);
+        }
+
         // 누적된 파일과 새 파일을 합친 후 중복 제거
-        selectedFiles = [...selectedFiles, ...files];
+        selectedFiles = [...selectedFiles, ...validFiles];
 
         // 중복 파일 제거 (파일 이름 기준)
         selectedFiles = selectedFiles.filter((file, index, self) =>
@@ -79,4 +98,34 @@ document.addEventListener('DOMContentLoaded', function () {
     descInput.addEventListener('input', () => {
         descCount.textContent = descInput.value.length;
     });
-})
+
+    function validateInput(input) {
+        if (input.checkValidity()) {
+            input.classList.remove('is-invalid');
+        } else {
+            input.classList.add('is-invalid');
+        }
+    }
+
+    titleInput.addEventListener('input', () => validateInput(titleInput));
+    priceInput.addEventListener('input', () => validateInput(priceInput));
+    descInput.addEventListener('input', () => {
+        validateInput(descInput);
+        descCount.textContent = descInput.value.length;
+    });
+    normalFeeInput.addEventListener('input', () => validateInput(normalFeeInput));
+    cheapFeeInput.addEventListener('input', () => validateInput(cheapFeeInput));
+
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            Array.from(form.elements).forEach(element => {
+                validateInput(element);
+            });
+
+            alert("입력 내용을 다시 확인해주세요.");
+        }
+    });
+});

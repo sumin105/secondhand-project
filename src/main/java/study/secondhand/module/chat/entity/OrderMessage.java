@@ -18,7 +18,7 @@ public class OrderMessage {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chat_message_id", nullable = false)
+    @JoinColumn(name = "chat_message_id", nullable = false, unique = true)
     private ChatMessage chatMessage;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -33,6 +33,7 @@ public class OrderMessage {
     @Column(nullable = false)
     private OrderStatus orderStatus;
 
+    @Column(length = 2048)
     private String trackingUrl; // 배송조회 URL
 
     public String getImageUrl() {

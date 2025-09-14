@@ -1,11 +1,12 @@
 package study.secondhand.module.product.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
 import study.secondhand.module.product.dto.ProductRequestDto;
 import study.secondhand.module.user.entity.User;
 
@@ -15,21 +16,24 @@ import java.util.List;
 
 @Entity
 @Getter
-@NoArgsConstructor // 파라미터 없는 기본 생성자 자동 생성
+@NoArgsConstructor
 @Table(name = "products")
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 30)
+    @Size(min = 2, max = 30, message = "상품명은 2자 이상 30자 이하여야 합니다.")
     private String title; // 상품명
 
     @Column(nullable = false, columnDefinition = "TEXT")
-    @Size(max = 2000, message = "설명은 2000자 이내여야 합니다.")
+    @Size(min = 10, max = 2000, message = "설명은 10자 이상 2000자 이내여야 합니다.")
     private String description; // 상품설명
 
     @Column(nullable = false)
+    @Min(value = 500, message = "가격은 500원 이상이어야 합니다.")
+    @Max(value = 100000000, message = "가격은 1억 원 이하여야 합니다.")
     private int price; // 가격
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -46,14 +50,12 @@ public class Product {
     @Column(nullable = false)
     private int favoriteCount = 0;
 
-    @Column(nullable = false)
-    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt; // 생성 시각
 
     @Column(nullable = false)
     private LocalDateTime updatedAt; // 수정 시각
 
-    // 열거형 타입 필드에는 enum 클래스 지정 필요
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private DealMethod dealMethod; // 거래 방식 (직거래 / 택배)
@@ -71,12 +73,25 @@ public class Product {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductImage> images = new ArrayList<>();
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 2048)
     private String thumbnailImageUrl;
 
+    @Max(value = 30000, message = "일반택배비는 30,000원을 초과할 수 없습니다.")
     private Integer normalDeliveryFee; // 일반 택배 배송비
 
+    @Max(value = 30000, message = "반값택배비는 30,000원을 초과할 수 없습니다.")
     private Integer cheapDeliveryFee; // 반값 택배 배송비
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 
 
     public Product(ProductRequestDto dto, User seller, Category category) {
@@ -121,18 +136,6 @@ public class Product {
             return images.get(0).getImageUrl();
         }
         return "/images/default.jpg"; // 썸네일 이미지 없을 경우 기본 이미지 경로 설정해줘야함
-    }
-
-    // 엔티티 저장 전 시간 설정
-    @PrePersist
-    public void prePersist() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        this.updatedAt = LocalDateTime.now();
     }
 
     public void update(ProductRequestDto dto, Category category) {

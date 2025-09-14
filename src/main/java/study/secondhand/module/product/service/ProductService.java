@@ -41,7 +41,7 @@ public class ProductService {
     private final ChatService chatService;
     private final UserService userService;
 
-    public ProductService(ProductRepository productRepository, @Lazy FavoriteService favoriteService, CategoryService categoryService, ImageService imageService, PaymentService paymentService, OrderService orderService, ChatService chatService, @Lazy UserService userService) {
+    public ProductService(ProductRepository productRepository, @Lazy FavoriteService favoriteService, CategoryService categoryService, ImageService imageService, PaymentService paymentService, OrderService orderService, @Lazy ChatService chatService, @Lazy UserService userService) {
         this.productRepository = productRepository;
         this.favoriteService = favoriteService;
         this.categoryService = categoryService;

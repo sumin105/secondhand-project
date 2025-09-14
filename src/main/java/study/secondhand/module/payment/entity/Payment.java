@@ -1,12 +1,12 @@
 package study.secondhand.module.payment.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 import study.secondhand.module.product.entity.Product;
 import study.secondhand.module.user.entity.User;
 
@@ -23,18 +23,24 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true, length = 255)
     private String paymentId; // 포트원 결제 고유 ID
 
     @Column(nullable = false)
+    @Min(500)
+    @Max(100000000)
     private int amount; // 상품 금액
 
+    @Min(0)
+    @Max(30000)
     private Integer deliveryFee; // 배송비
 
     @Column(nullable = false)
+    @Min(500)
+    @Max(100030000)
     private int finalAmount; // 최종 금액
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private String payMethod; // 결제 수단(토스, 카카오페이, 카드)
 
     @Enumerated(EnumType.STRING)
@@ -55,14 +61,22 @@ public class Payment {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product; // 상품
 
-    @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt; // 결제 요청 시각
 
-    @UpdateTimestamp
     @Column(nullable = false)
     private LocalDateTime updatedAt; // 업데이트 시각
 
+    @PrePersist
+    protected void prePersist() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void preUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 
     @Getter
     public enum Status {

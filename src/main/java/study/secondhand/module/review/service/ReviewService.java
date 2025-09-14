@@ -17,6 +17,7 @@ import study.secondhand.module.review.dto.ReviewRequestDto;
 import study.secondhand.module.review.entity.Review;
 import study.secondhand.module.review.repository.ReviewRepository;
 import study.secondhand.module.user.entity.User;
+import study.secondhand.module.user.service.UserService;
 
 import java.nio.file.AccessDeniedException;
 import java.util.Collections;
@@ -29,6 +30,7 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final OrderService orderService;
     private final SystemMessageService systemMessageService;
+    private final UserService userService;
 
     @Transactional
     public Review createReview(ReviewRequestDto dto, User user) {
@@ -39,6 +41,10 @@ public class ReviewService {
             target = order.getSeller();
         } else {
             target = order.getBuyer();
+        }
+
+        if (target.isWithdrawn()) {
+            throw new IllegalArgumentException("탈퇴한 회원의 후기는 작성할 수 없습니다.");
         }
 
         List<ReviewTag> tags = dto.getTags() != null ? dto.getTags() : Collections.emptyList();
@@ -88,6 +94,10 @@ public class ReviewService {
     public ReviewFormViewDto getReviewFormData(Long orderId, User user) throws AccessDeniedException {
         Order order = orderService.findOrder(orderId);
         orderService.existsByUser(order, user);
+        User target = order.getBuyer().getId().equals(user.getId()) ? order.getSeller() : order.getBuyer();
+        if (target.isWithdrawn()) {
+            throw new IllegalArgumentException("탈퇴한 회원의 후기는 작성할 수 없습니다.");
+        }
         return new ReviewFormViewDto(order, user);
     }
 

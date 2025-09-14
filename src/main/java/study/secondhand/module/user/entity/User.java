@@ -30,27 +30,31 @@ public class User {
     private String name;
 
     @Setter
-    @Column(length = 30, unique = true)
+    @Column(length = 12, unique = true)
     private String nickname;
 
+    @Setter
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role; // 기본값 설정 필요
+    @Builder.Default
+    private Role role = Role.USER;
 
     @Setter
     @Column(nullable = false)
+    @Builder.Default
     private boolean deleted = false;
 
     @Setter
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private UserStatus status = UserStatus.ACTIVE;
 
     @Column(length = 255)
     private String email;
 
     @Setter
-    @Column(length = 11)
+    @Column(length = 15)
     private String phoneNumber;
 
     @Setter
@@ -81,10 +85,21 @@ public class User {
 
 
     @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt; // 계정 생성 시간
+    private LocalDateTime createdAt;
 
     @Column(nullable = false)
-    private LocalDateTime updatedAt; // 마지막 수정 시간
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    public void prePersist() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 
     public User(String oauthId, String provider, String name, String email) {
         this.oauthId = oauthId;
@@ -92,6 +107,8 @@ public class User {
         this.name = name;
         this.email = email;
         this.role = Role.USER;
+        this.status = UserStatus.ACTIVE;
+        this.deleted = false;
     }
 
     public void increaseReportCount() {
@@ -106,20 +123,6 @@ public class User {
         ACTIVE, // 정상 회원
         WITHDRAWN, // 회원 탈퇴
         BANNED // 정지된 회원
-    }
-
-    @PrePersist
-    public void prePersist() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-        if (this.role == null) {
-            this.role = Role.USER; // 기본값 User 설정
-        }
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        this.updatedAt = LocalDateTime.now();
     }
 
     public boolean isAdmin() {

@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import study.secondhand.global.exception.DuplicateNicknameException;
 import study.secondhand.global.exception.ErrorResponse;
@@ -12,6 +13,13 @@ import study.secondhand.global.exception.ProductNotFoundException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public String handleMaxSizeException(RedirectAttributes redirectAttributes) {
+        System.out.println("[글로번 예외] MaxUploadSizeExceededException: 파일 크기 초과");
+        redirectAttributes.addFlashAttribute("errorMessage", "파일 용량이 너무 큽니다. (개별 10MB, 총 20MB 이하)");
+        return "redirect:/products/new";
+    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleAllException(Exception ex) {

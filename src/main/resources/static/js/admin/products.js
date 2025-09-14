@@ -1,6 +1,4 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const csrfToken = document.querySelector("meta[name='_csrf']")?.getAttribute("content");
-    const csrfHeader = document.querySelector("meta[name='_csrf_header']")?.getAttribute("content");
 
     document.querySelectorAll('.delete-product-btn').forEach(button => {
         button.addEventListener('click', function () {

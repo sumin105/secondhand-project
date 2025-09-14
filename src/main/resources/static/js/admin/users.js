@@ -1,6 +1,4 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const csrfToken = document.querySelector("meta[name='_csrf']")?.getAttribute("content");
-    const csrfHeader = document.querySelector("meta[name='_csrf_header']")?.getAttribute("content");
 
     // 정지/해제 폼
     document.querySelectorAll('form.confirm-form').forEach(form => {

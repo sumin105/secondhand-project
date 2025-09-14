@@ -10,7 +10,7 @@
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 </head>
-<body th:data-is-logged-in="${loginUser != null}">
+<body th:data-is-logged-in="${loginUser != null}" th:data-user-id="${loginUser != null ? loginUser.id : null}">
 <!-- 상단 고정 네비게이션 -->
 <header class="bg-light py-3 border-bottom fixed-top shadow-sm">
     <div class="container">
@@ -38,7 +38,7 @@
                      th:if="${loginUser != null && !#authorization.expression('hasRole(''ADMIN'')')}">
                     <a class="nav-link text-dark" th:href="@{/shop/{id}(id=${loginUser.id})}">내상점</a>
                     <a class="nav-link text-dark" th:href="@{/products/new}">상품 등록</a>
-                    <a class="nav-link text-dark position-relative" th:href="@{/templates/chat}">
+                    <a class="nav-link text-dark position-relative" th:href="@{/chat}">
                         채팅
                         <span id="nav-unread-count"
                               class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
@@ -94,6 +94,8 @@
 </div>
 
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
 <script th:src="@{/js/fragments/layout.js}"></script>
 
 </body>

@@ -5,8 +5,8 @@
 <head>
     <meta charset="UTF-8">
     <title>상품 등록</title>
-    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
-    <link rel="stylesheet" th:href="@{/css/product/product-form.css}" />
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/product/product-form.css}"/>
 </head>
 <body>
 <div layout:fragment="content">
@@ -15,21 +15,26 @@
         <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
 
         <form th:action="@{/products}" method="post" enctype="multipart/form-data">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <div class="mb-3">
-                <label for="image" class="form-label">상품 이미지 <small class="text-danger">(1장 필수, 최대 5장)</small></label>
+                <label for="image" class="form-label">상품 이미지 <small class="text-danger">(1장 필수, 최대 5장, 각 10MB
+                    이하)</small></label>
                 <input class="form-control" type="file" id="image" name="image" accept="image/*" required multiple>
                 <div class="image-preview" id="imagePreview"></div>
             </div>
 
             <div class="mb-3">
                 <label for="title" class="form-label">상품명</label>
-                <input type="text" class="form-control" id="title" name="title" required>
+                <input type="text" class="form-control" id="title" name="title" required
+                       minlength="2" maxlength="30" placeholder="상품명 (2~30자)">
+                <div class="invalid-feedback">상품명은 2자 이상 30자 이하로 입력해주세요.</div>
             </div>
 
             <div class="mb-3">
                 <label for="price" class="form-label">가격</label>
-                <input type="number" class="form-control" id="price" name="price" required>
+                <input type="number" class="form-control" id="price" name="price" required
+                       min="500" max="100000000" placeholder="가격 (500원 ~ 1억원)">
+                <div class="invalid-feedback">가격은 500원 이상 1억원 이하로 입력해주세요.</div>
             </div>
 
             <div class="mb-3">
@@ -38,12 +43,14 @@
                           id="description"
                           name="description"
                           rows="8"
+                          minlength="10"
                           maxlength="2000"
-                          placeholder="상품 상태, 구성품, 사용감 등을 2000자 이내로 작성해주세요."
+                          placeholder="상품 상태, 구성품, 사용감 등을 10자 이상 2000자 이내로 작성해주세요."
                           required></textarea>
                 <div class="text-end">
                     <small><span id="descCount">0</span>/2000자</small>
                 </div>
+                <div class="invalid-feedback">설명은 10자 이상 입력해주세요.</div>
             </div>
 
             <div class="mb-3">
@@ -69,13 +76,15 @@
             <div id="deliveryFees" class="d-none">
                 <div class="mb-3">
                     <label for="normalDeliveryFee" class="form-label">일반택배</label>
-                    <input type="number" class="form-control" id="normalDeliveryFee" name="normalDeliveryFee" min="0"
-                           value="0">
+                    <input type="number" class="form-control" id="normalDeliveryFee" name="normalDeliveryFee"
+                           min="0" value="0" max="30000">
+                    <div class="invalid-feedback">배송비는 30,000원을 초과할 수 없습니다.</div>
                 </div>
                 <div class="mb-3">
                     <label for="cheapDeliveryFee" class="form-label">반값•알뜰택배</label>
-                    <input type="number" class="form-control" id="cheapDeliveryFee" name="cheapDeliveryFee" min="0"
-                           value="0">
+                    <input type="number" class="form-control" id="cheapDeliveryFee" name="cheapDeliveryFee"
+                           min="0" value="0" max="30000">
+                    <div class="invalid-feedback">배송비는 30,000원을 초과할 수 없습니다.</div>
                 </div>
             </div>
 

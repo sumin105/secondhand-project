@@ -12,7 +12,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "system_message_read")
+@Table(name = "system_message_read",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"message_id", "user_id"}))
 public class SystemMessageRead {
 
     @Id
@@ -20,13 +21,14 @@ public class SystemMessageRead {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "message_id")
+    @JoinColumn(name = "message_id", nullable = false)
     private ChatMessage message;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Column(nullable = false, updatable = false)
     private LocalDateTime readAt;
 
     @PrePersist

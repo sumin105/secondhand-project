@@ -50,4 +50,22 @@ public interface UserRepository extends JpaRepository<User, Long> {
             AND u.role != 'ADMIN' AND u.role != 'SYSTEM'
             """)
     Page<StoreSummaryDto> findStoreSummariesByKeyword(@Param("keyword") String keyword, Pageable pageable);
+
+    @Query("""
+            SELECT new study.secondhand.module.user.dto.StoreSummaryDto(
+            u.id,
+            u.nickname,
+            u.status,
+            (SELECT COUNT(p) FROM Product p WHERE p.seller = u AND p.deleted = false),
+            COALESCE((SELECT AVG(r.rating) FROM Review r WHERE r.target = u), 0.0)
+            )
+            FROM User u
+            WHERE u.id = :userId
+            AND u.status != 'WITHDRAWN'
+            AND u.deleted = false
+            AND u.role != 'ADMIN' AND u.role != 'SYSTEM'
+            """)
+    Page<StoreSummaryDto> findStoreSummaryById(@Param("userId") Long id, Pageable pageable);
+
+    Optional<User> findByEmail(String attr0);
 }

@@ -4,8 +4,6 @@
       layout:decorate="~{layout}">
 <head>
     <meta charset="UTF-8">
-    <meta name="_csrf" th:content="${_csrf.token}">
-    <meta name="_csrf_header" th:content="${_csrf.headerName}">
     <title>찜 목록</title>
     <link rel="stylesheet" th:href="@{/css/shop/shop-common.css}">
     <link rel="stylesheet" th:href="@{/css/shop/wishlist.css}">
@@ -22,8 +20,8 @@
             <div class="sold-out-overlay">
                 <img th:src="${favorite.images[0]?.imageUrl}" alt="상품이미지"/>
                 <div class="sold-out-label"
-                     th:if="${favorite.productStatus != 'SELLING'}"
-                     th:text="${favorite.productStatus == 'RESERVED' ? '예약중' : '판매완료'}">
+                     th:if="${favorite.productStatus != '판매중'}"
+                     th:text="${favorite.productStatus == '예약중' ? '예약중' : '판매완료'}">
                 </div>
             </div>
 

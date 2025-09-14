@@ -18,9 +18,7 @@
                 </button>
                 <button type="button" class="btn btn-outline-danger btn-sm"
                         data-bs-toggle="modal"
-                        data-bs-target="#deleteConfirmModal"
-                        th:data-csrf-token="${_csrf.token}"
-                        th:data-csrf-header="${_csrf.headerName}">
+                        data-bs-target="#deleteConfirmModal">
                     회원 탈퇴
                 </button>
             </div>
@@ -78,6 +76,7 @@
                                    th:value="${headerData.loginUserNickname}"
                                    th:placeholder="${headerData.loginUserNickname == null or headerData.loginUserNickname == ''} ? '닉네임을 입력해주세요 (2~12자)' : ''"
                                    required>
+                            <div class="invalid-feedback" id="nicknameError"></div>
                         </div>
 
                         <div class="mb-3">
@@ -124,7 +123,7 @@
         <div class="modal fade" id="reportUserModal" tabindex="-1" aria-labelledby="reportUserModalLabel"
              aria-hidden="true">
             <div class="modal-dialog">
-                <form class="modal-content" th:action="@{/reports/user}" method="post">
+                <form class="modal-content" id="reportUserForm" th:action="@{/reports/user}" method="post">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                     <div class="modal-header">
                         <h5 class="modal-title text-danger" id="reportUserModalLabel">사용자 신고</h5>
@@ -135,8 +134,8 @@
                         <input type="hidden" name="reportedUserId" th:value="${headerData.shopOwnerId}"/>
 
                         <div class="mb-3">
-                            <label for="reason" class="form-label">신고 사유</label>
-                            <select class="form-select" id="reason" name="reason" required>
+                            <label for="reportReason" class="form-label">신고 사유</label>
+                            <select class="form-select" id="reportReason" name="reason" required>
                                 <option value="" selected disabled>사유를 선택해주세요</option>
                                 <option value="허위 정보 게시">허위 정보 게시</option>
                                 <option value="욕설/비방">욕설/비방</option>
@@ -146,15 +145,18 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="description" class="form-label">상세 설명 (선택)</label>
-                            <textarea class="form-control" id="description" name="description"
+                            <label for="reportDescription" class="form-label">상세 설명 (선택)</label>
+                            <textarea class="form-control" id="reportDescription" name="description"
                                       rows="3" maxlength="500"
                                       placeholder="자세한 신고 내용을 입력해주세요 (선택)"></textarea>
+                            <div class="text-end small text-muted mt-1">
+                                <span id="reportDescCount">0</span> / 500자
+                            </div>
                         </div>
                     </div>
 
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-danger">신고 제출</button>
+                        <button type="submit" class="btn btn-danger" id="reportSubmitBtn" disabled>신고 제출</button>
                     </div>
                 </form>
             </div>

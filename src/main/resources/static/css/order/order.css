@@ -1,7 +1,8 @@
 .order-wrapper {
     display: flex;
     justify-content: center;
-    padding: 40px 0;
+    padding: 20px 0;
+    /* padding: 40px 0; */
 }
 
 .order-container {
@@ -13,7 +14,7 @@
     border-radius: 8px;
 }
 
-header {
+.order-container header {
     display: flex;
     justify-content: space-between;
     margin-bottom: 20px;
@@ -44,7 +45,7 @@ header {
     margin-top: 0; /* 첫 dd의 상단 여백도 제거 */
 }
 
-section {
+.order-container section {
     margin-bottom: 20px;
 }
 
@@ -89,12 +90,12 @@ section {
     font-weight: bold;
 }
 
-dt {
+.order-container dt {
     font-weight: bold;
     margin-top: 8px;
 }
 
-dd {
+.order-container dd {
     margin-left: 15px;
     margin-bottom: 5px;
 }
@@ -106,7 +107,7 @@ dd {
     color: #198754;
 }
 
-input[type="text"] {
+.order-container input[type="text"] {
     width: 100%;
     padding: 10px;
     border: 1px solid #ccc;
@@ -116,14 +117,14 @@ input[type="text"] {
     box-sizing: border-box;
 }
 
-form label {
+.order-container form label {
     display: block;
     margin-bottom: 15px;
     font-weight: bold;
     color: #333;
 }
 
-button[type="submit"] {
+.order-container button[type="submit"] {
     background-color: #007BFF;
     color: #fff;
     border: none;
@@ -134,7 +135,7 @@ button[type="submit"] {
     transition: background-color 0.2s ease;
 }
 
-button[type="submit"]:hover {
+.order-container button[type="submit"]:hover {
     background-color: #0056b3;
 }
 
@@ -178,7 +179,8 @@ button[type="submit"]:hover {
 hr.margin-custom {
     margin: 10px 0;
 }
-form.margin-top-custom {
+
+.order-container form.margin-top-custom {
     margin-top: 15px;
 }
 a.tracking-link {
@@ -269,11 +271,11 @@ a.tracking-link {
     display: flex;
 }
 
-.right-align form {
+.order-container .right-align form {
     flex: 1;
 }
 
-.right-align button {
+.order-container .right-align button {
     height: 100%;
     padding: 12px 0;
 }

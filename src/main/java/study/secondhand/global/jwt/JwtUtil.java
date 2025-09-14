@@ -4,33 +4,31 @@ import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import study.secondhand.global.config.JwtConfig;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class JwtUtil {
 
-    @Value("${jwt.secret}")
-    private String secret;
-
-    @Value("${jwt.expiration:3600000}") // JWT 만료시간 : 기본 1시간
-    private long expiration;
+    private final JwtConfig jwtConfig;
 
     private SecretKey key;
 
     @PostConstruct
     public void init() {
         // base64로 인코딩된 문자열을 SecretKey로 변환
-        this.key = Keys.hmacShaKeyFor(secret.getBytes());
+        this.key = Keys.hmacShaKeyFor(jwtConfig.getSecret().getBytes());
     }
 
     public String createToken(String subject) {
-        return createToken(subject, expiration);
+        return createToken(subject, jwtConfig.getExpiration());
     }
 
     public String createToken(String subject, long customExpiration) {

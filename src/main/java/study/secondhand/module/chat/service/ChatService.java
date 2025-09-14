@@ -1,5 +1,6 @@
 package study.secondhand.module.chat.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -23,7 +24,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
 @Service
 @Transactional
 public class ChatService {
@@ -31,20 +31,24 @@ public class ChatService {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
-    private final UserService userService;
+    private UserService userService;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final SystemMessageReadRepository systemMessageReadRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final TimeUtil timeUtil;
 
-    public ChatService(@Lazy UserService userService, ChatRoomRepository chatRoomRepository, ChatMessageRepository chatMessageRepository, SystemMessageReadRepository systemMessageReadRepository, SimpMessagingTemplate messagingTemplate, TimeUtil timeUtil) {
-        this.userService = userService;
+    public ChatService(ChatRoomRepository chatRoomRepository, ChatMessageRepository chatMessageRepository, SystemMessageReadRepository systemMessageReadRepository, SimpMessagingTemplate messagingTemplate, TimeUtil timeUtil) {
         this.chatRoomRepository = chatRoomRepository;
         this.chatMessageRepository = chatMessageRepository;
         this.systemMessageReadRepository = systemMessageReadRepository;
         this.messagingTemplate = messagingTemplate;
         this.timeUtil = timeUtil;
+    }
+
+    @Autowired
+    public void setUserService(@Lazy UserService userService) {
+        this.userService = userService;
     }
 
     @Transactional
@@ -55,10 +59,6 @@ public class ChatService {
 
         User receiver = userService.findById(receiverId);
 
-        if (receiver.isAdmin() | receiver.isSystem() | receiver.isDeleted()) {
-            throw new IllegalArgumentException("존재하지 않는 사용자입니다.");
-        }
-
         ChatRoom room = getOrCreateRoom(loginUser, receiver);
         markMessagesAsRead(room.getId(), loginUser.getId());
         List<ChatRoomSummary> chatRooms = getRoomsByUser(loginUser);
@@ -66,20 +66,27 @@ public class ChatService {
         return new ChatRoomViewDto(receiver, chatRooms, room.getId(), loginUser);
     }
 
+    // isDeleted 유저와의 기존 채팅방 조회 o / 생성 x
     public ChatRoom getOrCreateRoom(User userA, User userB) {
         if (userA.getId().equals(userB.getId())) {
             throw new IllegalArgumentException("자기 자신과의 채팅방은 만들 수 없습니다.");
         }
 
-        if (userB.isSystem() || userB.isAdmin() || userB.isDeleted()) {
+        if (userB.isSystem() || userB.isAdmin()) {
             throw new IllegalArgumentException("존재하지 않는 사용자입니다.");
         }
 
         return chatRoomRepository.findByChatRoomByUserPair(userA.getId(), userB.getId())
-                .orElseGet(() -> chatRoomRepository.save(ChatRoom.builder()
-                        .sender(userA)
-                        .receiver(userB)
-                        .build()));
+                .orElseGet(() -> {
+                    if (userB.isDeleted()) {
+                        throw new IllegalArgumentException("존재하지 않는 사용자입니다.");
+                    }
+
+                    return chatRoomRepository.save(ChatRoom.builder()
+                            .sender(userA)
+                            .receiver(userB)
+                            .build());
+                });
     }
 
     @Transactional(readOnly = true)
@@ -88,6 +95,7 @@ public class ChatService {
                 .stream()
                 .map(msg -> {
                     boolean isRead;
+
                     if ("SYSTEM".equals(msg.getSender().getRole().name())) {
                         isRead = isSystemMessageReadByUser(msg.getId(), loginUserId);
                     } else {
@@ -106,8 +114,7 @@ public class ChatService {
             return new ArrayList<>();
         }
 
-        // 2. 모든 채팅방 마지막 메시지를 한번에 조회
-        // 채팅방 ID 목록 추출
+        // 2. 모든 채팅방 마지막 메시지 조회
         List<Long> roomIds = roomInfos.stream().map(ChatRoomBasicInfo::roomId).toList();
         List<ChatMessage> lastMessages = chatMessageRepository.findLastMessagesByRoomIds(roomIds);
         Map<Long, ChatMessage> lastMessaageMap = lastMessages.stream()
@@ -116,25 +123,29 @@ public class ChatService {
         // 3. 두 결과를 조합하여 최종 DTO 생성
         return roomInfos.stream().map(info -> {
             ChatRoom room = info.room();
+
             User otherUser = room.getSender().getId().equals(user.getId()) ? room.getReceiver() : room.getSender();
             ChatMessage lastMessage = lastMessaageMap.get(room.getId());
-
             String lastMessageContent = "";
-            LocalDateTime lastMessageTime = lastMessage.getCreatedAt();
+            LocalDateTime lastMessageTime = room.getCreatedAt();
 
-            switch (lastMessage.getType()) {
-                case TEXT:
-                    lastMessageContent = lastMessage.getContent();
-                    break;
-                case ORDER:
-                    lastMessageContent = "[주문 메시지]";
-                    break;
-                case REVIEW:
-                    lastMessageContent = "[후기 메시지]";
-                    break;
-                case IMAGE:
-                    lastMessageContent = "[이미지]";
-                    break;
+            if (lastMessageTime != null) {
+                lastMessageTime = lastMessage.getCreatedAt();
+
+                switch (lastMessage.getType()) {
+                    case TEXT:
+                        lastMessageContent = lastMessage.getContent();
+                        break;
+                    case ORDER:
+                        lastMessageContent = "[주문 메시지]";
+                        break;
+                    case REVIEW:
+                        lastMessageContent = "[후기 메시지]";
+                        break;
+                    case IMAGE:
+                        lastMessageContent = "[이미지]";
+                        break;
+                }
             }
 
             return new ChatRoomSummary(
@@ -149,7 +160,6 @@ public class ChatService {
             );
         }).collect(Collectors.toList());
     }
-
 
     // 읽음 처리
     @Transactional
@@ -228,7 +238,6 @@ public class ChatService {
         } catch (Exception e) {
             throw new RuntimeException("이미지 업로드 실패", e);
         }
-
         return "chat/" + safeFileName;
     }
 
@@ -248,13 +257,36 @@ public class ChatService {
 
         // 3. 발신자, 수신자 채팅방 목록 UI 업데이트
         broadcastRoomListUpdates(savedMessage);
+
+        // 4. 수신자의 전체 안 읽은 메시지 수를 다시 계산하여 레이아웃 UI 업데이트
+        Long receiverId = findReceiverId(roomId, dto.getSenderId());
+        int totalUnreadCountForReceiver = getTotalUnreadMessageCount(receiverId);
+        messagingTemplate.convertAndSend("/topic/unread-count/" + receiverId, totalUnreadCountForReceiver);
     }
 
     // 채팅 메시지를 생성하고 저장, 기존 채팅 메시지 저장 메서드, roomId가 이미 존재한다고 가정하고 바로 메시지 저장
     private ChatMessage createAndSaveMessage(Long roomId, ChatMessageDto dto) {
+        if (dto.getMessageType() == ChatMessage.MessageType.TEXT) {
+            if (dto.getContent() == null || dto.getContent().isBlank()) {
+                throw new IllegalArgumentException("텍스트 메시지의 내용은 비어있을 수 없습니다.");
+            }
+        } else if (dto.getMessageType() == ChatMessage.MessageType.IMAGE) {
+            if (dto.getImageUrl() == null || dto.getImageUrl().isBlank()) {
+                throw new IllegalArgumentException("이미지 메시지의 URL은 비어있을 수 없습니다.");
+            }
+        }
+
+
         User sender = userService.findById(dto.getSenderId());
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다."));
+
+        User receiver = chatRoom.getReceiver().getId().equals(sender.getId())
+                ? chatRoom.getSender() : chatRoom.getReceiver();
+
+        if (receiver.isWithdrawn()) {
+            throw new IllegalArgumentException("탈퇴한 회원에게는 메시지를 보낼 수 없습니다.");
+        }
 
         ChatMessage message = ChatMessage.builder()
                 .chatRoom(chatRoom)
@@ -265,7 +297,6 @@ public class ChatService {
                 .imageUrl(dto.getImageUrl())
                 .build();
 
-        System.out.println("저장된 메시지: " + message.getContent());
         return chatMessageRepository.save(message);
     }
 
@@ -328,21 +359,9 @@ public class ChatService {
             );
             messagingTemplate.convertAndSend("/topic/chat-room/" + userId, roomUpdate);
         }
-
         // 읽음 알림 전송
         Long partnerId = findReceiverId(roomId, userId);
         messagingTemplate.convertAndSend("/topic/chat-read/" + partnerId, "READ");
-
-    }
-
-    @Transactional
-    public ChatMessage saveAndReturn(ChatMessage message) {
-        ChatRoom room = chatRoomRepository.findById(message.getChatRoom().getId())
-                .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다."));
-        message.setChatRoom(room);
-        message.setCreatedAt(LocalDateTime.now());
-        System.out.println("저장된 메시지: " + message.getContent());
-        return chatMessageRepository.save(message);
     }
 
     public boolean existsByProduct(Product product) {
@@ -351,7 +370,34 @@ public class ChatService {
 
     @Transactional(readOnly = true)
     public boolean existsBySenderOrReceiver(User user) {
-        return chatRoomRepository.existsBySender(user) ||
-                chatRoomRepository.existsByReceiver(user);
+        return chatRoomRepository.existsBySender(user) || chatRoomRepository.existsByReceiver(user);
+    }
+
+
+    public void broadcastSystemMessage(ChatMessage savedMessage) {
+        // 공통 업데이트 메서드 호출, 실시간 알림
+        ChatRoom chatRoom = savedMessage.getChatRoom();
+        Long roomId = chatRoom.getId();
+        Long userAId = chatRoom.getSender().getId();
+        Long userBId = chatRoom.getReceiver().getId();
+
+        // 채팅방에 새로운 메시지 버블 전송
+        broadcastChatMessage(roomId, savedMessage);
+
+        // 채팅방 목록 UI 업데이트
+        int roomUnreadCountForA = countUnreadMessages(roomId, userAId);
+        ChatRoomUpdateDto updateForA = createRoomUpdateDto(savedMessage, roomUnreadCountForA);
+        messagingTemplate.convertAndSend("/topic/chat-room/" + userAId, updateForA);
+
+        int roomUnreadCountForB = countUnreadMessages(roomId, userBId);
+        ChatRoomUpdateDto updateForB = createRoomUpdateDto(savedMessage, roomUnreadCountForB);
+        messagingTemplate.convertAndSend("/topic/chat-room/" + userBId, updateForB);
+
+        // 네비바 전체 안 읽은 메시지 수 업데이트
+        int totalUnreadCountForA = getTotalUnreadMessageCount(userAId);
+        messagingTemplate.convertAndSend("/topic/unread-count/" + userAId, totalUnreadCountForA);
+
+        int totalUnreadCountForB = getTotalUnreadMessageCount(userBId);
+        messagingTemplate.convertAndSend("/topic/unread-count/" + userBId, totalUnreadCountForB);
     }
 }

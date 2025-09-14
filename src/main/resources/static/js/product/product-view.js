@@ -1,6 +1,4 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const csrfToken = document.querySelector("meta[name='_csrf']")?.getAttribute("content");
-    const csrfHeader = document.querySelector("meta[name='_csrf_header']")?.getAttribute("content");
     const dataElement = document.getElementById('product-view-data');
 
     if (!dataElement || !dataElement.dataset.productJson) {
@@ -79,7 +77,7 @@ document.addEventListener("DOMContentLoaded", function () {
         try {
             const response = await fetchWithRefresh(`/api/products/${productId}/favorites`, {
                 method: httpMethod,
-                headers: { [csrfHeader]: csrfToken },
+                headers: {[csrfHeader]: csrfToken},
                 credentials: 'include'
             });
 
@@ -238,11 +236,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function handlePaymentAndCloseModal() {
         const request = document.getElementById("deliveryRequest").value.trim();
-        if(selectedDeliveryInfo) {
+        if (selectedDeliveryInfo) {
             selectedDeliveryInfo.request = request;
         }
 
-        const { name, phoneNumber, address, storeName, storeAddress } = selectedDeliveryInfo || {};
+        const {name, phoneNumber, address, storeName, storeAddress} = selectedDeliveryInfo || {};
 
         if (selectedDeliveryType === 'normal') {
             if (!name || !phoneNumber || !address) {
@@ -260,7 +258,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         requestPayment(selectedFinalAmount, selectedDeliveryInfo);
         const detailModal = bootstrap.Modal.getInstance(document.getElementById("deliveryDetailModal"));
-        if(detailModal) detailModal.hide();
+        if (detailModal) detailModal.hide();
     }
 
     async function requestPayment(finalAmount, deliveryInfo) {
@@ -373,7 +371,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function displayPlaces(places) {
         const listEl = document.getElementById('placesList');
         const menuEl = document.getElementById('menu_wrap');
-        if(!listEl || !menuEl) return;
+        if (!listEl || !menuEl) return;
 
         const fragment = document.createDocumentFragment();
         const bounds = new kakao.maps.LatLngBounds();
@@ -398,10 +396,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 itemEl.onclick = () => {
                     document.getElementById('cvsStoreNameInput').value = title;
                     document.getElementById('cvsStoreAddressInput').value = address;
-                    if(infowindow) infowindow.close();
+                    if (infowindow) infowindow.close();
 
                     const modal = bootstrap.Modal.getInstance(document.getElementById('placeSearchModal'));
-                    if(modal) modal.hide();
+                    if (modal) modal.hide();
                 };
             })(marker, place.place_name, place.road_address_name || place.address_name);
 
@@ -410,7 +408,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         listEl.appendChild(fragment);
         menuEl.scrollTop = 0;
-        if(map) map.setBounds(bounds);
+        if (map) map.setBounds(bounds);
     }
 
     function getListItem(index, place) {
@@ -438,9 +436,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 offset: new kakao.maps.Point(13, 37)
             },
             markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imgOptions),
-            marker = new kakao.maps.Marker({ position: position, image: markerImage });
+            marker = new kakao.maps.Marker({position: position, image: markerImage});
 
-        if(map) marker.setMap(map);
+        if (map) marker.setMap(map);
         markers.push(marker);
         return marker;
     }
@@ -452,7 +450,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function displayPagination(pagination) {
         const paginationEl = document.getElementById('pagination');
-        if(!paginationEl) return;
+        if (!paginationEl) return;
         while (paginationEl.hasChildNodes()) {
             paginationEl.removeChild(paginationEl.lastChild);
         }
@@ -473,7 +471,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function displayInfowindow(marker, title) {
         const content = `<div class="map-infowindow-content">${title}</div>`;
-        if(infowindow) {
+        if (infowindow) {
             infowindow.setContent(content);
             infowindow.open(map, marker);
         }
@@ -502,14 +500,14 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("editCvsBtn")?.addEventListener("click", openCVSInfoModal);
     document.getElementById("payNowBtn")?.addEventListener("click", handlePaymentAndCloseModal);
 
-    document.getElementById("chatBtn")?.addEventListener("click", function() {
+    document.getElementById("chatBtn")?.addEventListener("click", function () {
         if (this.getAttribute("data-logged-in") !== 'true') {
             if (typeof openLoginModal === 'function') openLoginModal();
             else alert('로그인이 필요합니다.');
             return;
         }
         const chatUrl = this.dataset.chatUrl;
-        if(chatUrl) window.location.href = chatUrl;
+        if (chatUrl) window.location.href = chatUrl;
     });
 
     document.getElementById("paymentBtn")?.addEventListener("click", async () => {
@@ -543,26 +541,37 @@ document.addEventListener("DOMContentLoaded", function () {
         searchPlaces();
     });
 
-    // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼ 이 부분이 수정되었습니다 ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
     document.getElementById("cvsStoreNameInput")?.addEventListener("click", function () {
-        // kakao.maps.load를 호출하여 스크립트가 로드된 후 지도를 생성합니다.
-        kakao.maps.load(function() {
-            const container = document.getElementById("map");
-            if (!container) return;
+        const placeSearchModalEl = document.getElementById('placeSearchModal');
+        const placeSearchModal = new bootstrap.Modal(placeSearchModalEl);
 
-            const option = {
-                center: new kakao.maps.LatLng(37.566826, 126.9786567),
-                level: 3
-            };
-            map = new kakao.maps.Map(container, option);
-            ps = new kakao.maps.services.Places();
-            infowindow = new kakao.maps.InfoWindow({ zIndex: 1 });
+        // 'shown.bs.modal' 이벤트: 모달이 완전히 화면에 표시된 후 콜백 함수를 실행합니다.
+        // { once: true } 옵션으로 이벤트가 한 번만 실행되도록 합니다.
+        placeSearchModalEl.addEventListener('shown.bs.modal', function () {
+            kakao.maps.load(function () {
+                const container = document.getElementById("map");
+                if (!container) return;
 
-            const modal = new bootstrap.Modal(document.getElementById('placeSearchModal'));
-            modal.show();
-        });
+                // 지도가 표시될 div가 보이지 않는 상태에서 지도 생성을 막기 위해,
+                // innerHTML을 비워 이전 지도 인스턴스를 제거합니다.
+                container.innerHTML = '';
+
+                const option = {
+                    center: new kakao.maps.LatLng(37.566826, 126.9786567),
+                    level: 3
+                };
+
+                map = new kakao.maps.Map(container, option);
+                ps = new kakao.maps.services.Places();
+                infowindow = new kakao.maps.InfoWindow({zIndex: 1});
+
+                // 모달 크기 변경이나 표시 상태 변경 후 지도가 깨지는 것을 방지합니다.
+                map.relayout();
+            });
+        }, { once: true });
+
+        placeSearchModal.show();
     });
-    // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ 이 부분이 수정되었습니다 ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
     // 폼 제출 관련
     document.getElementById("deliveryForm")?.addEventListener("submit", function (event) {
@@ -577,10 +586,16 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        selectedDeliveryInfo = { name, phoneNumber: phone, address: addressLine1, detailAddress: addressLine2, postcode: selectedPostCode };
+        selectedDeliveryInfo = {
+            name,
+            phoneNumber: phone,
+            address: addressLine1,
+            detailAddress: addressLine2,
+            postcode: selectedPostCode
+        };
 
         const infoModal = bootstrap.Modal.getInstance(document.getElementById("deliveryInfoModal"));
-        if(infoModal) infoModal.hide();
+        if (infoModal) infoModal.hide();
 
         document.getElementById('recipientName').textContent = selectedDeliveryInfo.name;
         document.getElementById('recipientPhone').textContent = selectedDeliveryInfo.phoneNumber;
@@ -591,7 +606,7 @@ document.addEventListener("DOMContentLoaded", function () {
         detailModal.show();
     });
 
-    document.getElementById("cvsForm")?.addEventListener("submit", function(event) {
+    document.getElementById("cvsForm")?.addEventListener("submit", function (event) {
         event.preventDefault();
         const name = document.getElementById("cvsName").value.trim();
         const phone = document.getElementById("cvsPhone").value.trim();
@@ -609,10 +624,10 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        selectedDeliveryInfo = { ...selectedDeliveryInfo, name, phoneNumber: phone, storeName, storeAddress };
+        selectedDeliveryInfo = {...selectedDeliveryInfo, name, phoneNumber: phone, storeName, storeAddress};
 
         const cvsModal = bootstrap.Modal.getInstance(document.getElementById("cvsInfoModal"));
-        if(cvsModal) cvsModal.hide();
+        if (cvsModal) cvsModal.hide();
 
         const detailModal = new bootstrap.Modal(document.getElementById("deliveryDetailModal"));
         detailModal.show();
@@ -631,4 +646,35 @@ document.addEventListener("DOMContentLoaded", function () {
     const cheapFeeText = document.getElementById("cheapFeeText");
     if (normalFeeText) normalFeeText.textContent = productData.normalDeliveryFee.toLocaleString() + "원";
     if (cheapFeeText) cheapFeeText.textContent = productData.cheapDeliveryFee.toLocaleString() + "원";
+
+    const reportModal = document.getElementById('reportProductModal');
+    if (reportModal) {
+        const reasonSelect = document.getElementById('reportReason');
+        const descriptionTextarea = document.getElementById('reportDescription');
+        const descCountSpan = document.getElementById('reportDescCount');
+        const submitBtn = document.getElementById('reportSubmitBtn');
+
+        function toggleReportSubmitButton() {
+            if (reasonSelect.value) {
+                submitBtn.disabled = false;
+            } else {
+                submitBtn.disabled = true;
+            }
+        }
+
+        function updateDescriptionCount() {
+            if (descCountSpan) {
+                descCountSpan.textContent = descriptionTextarea.value.length;
+            }
+        }
+
+        reasonSelect.addEventListener('change', toggleReportSubmitButton);
+        descriptionTextarea.addEventListener('input', updateDescriptionCount);
+
+        reportModal.addEventListener('show.bs.modal', function () {
+            reportModal.querySelector('form').reset();
+            toggleReportSubmitButton();
+            updateDescriptionCount();
+        });
+    }
 });

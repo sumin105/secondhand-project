@@ -24,6 +24,8 @@ import study.secondhand.module.user.repository.UserRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -63,7 +65,22 @@ public class UserService {
 
     public Page<StoreSummaryDto> searchStoreSummaries(String keyword, int page) {
         Pageable pageable = PageRequest.of(page, 20);
-        return userRepository.findStoreSummariesByKeyword(keyword, pageable);
+
+        // 상점 ()호 패턴 감지
+        Pattern shopIdPattern = Pattern.compile("^상점\\s*(\\d+)호$");
+        Matcher matcher = shopIdPattern.matcher(keyword);
+
+        // 패턴 일치 확인
+        if (matcher.find()) {
+            // 일치하면 숫자 부분만 추출
+            Long userId = Long.parseLong(matcher.group(1));
+
+            // 추출된 ID로 상점 직접 검색
+            return userRepository.findStoreSummaryById(userId, pageable);
+        } else {
+            // 패턴이 안 맞으면 일반 닉네임 검색
+            return userRepository.findStoreSummariesByKeyword(keyword, pageable);
+        }
     }
 
 
@@ -77,6 +94,13 @@ public class UserService {
                 throw new IllegalArgumentException("닉네임은 필수 입력 값입니다.");
             }
             newNickname = user.getNickname(); // 기존 닉네임 유지
+        }
+
+        // '상점..호' 패턴 검사
+        Pattern shopIdPattern = Pattern.compile("^상점\\s*(\\d+)호$");
+        Matcher matcher = shopIdPattern.matcher(newNickname);
+        if (matcher.find()) {
+            throw new IllegalArgumentException("'상점'으로 시작하고 '호'로 끝나는 형식의 닉네임은 사용할 수 없습니다.");
         }
 
         // 형식 유효성 검사
@@ -95,6 +119,9 @@ public class UserService {
 
         // 소개글 수정 (지우면 null 처리)
         if (newIntro != null && !newIntro.isBlank()) {
+            if (newIntro.length() > 500) {
+                throw new IllegalArgumentException("소개글은 최대 500자까지 작성할 수 있습니다.");
+            }
             user.setIntro(newIntro);
         } else {
             user.setIntro(null);

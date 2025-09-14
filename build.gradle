@@ -36,7 +36,7 @@ dependencies {
 	implementation 'org.webjars:stomp-websocket:2.3.4'
 	// JPA
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'mysql:mysql-connector-java'
+	// implementation 'mysql:mysql-connector-java'
 	runtimeOnly 'com.mysql:mysql-connector-j'
 	// OAuth
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'

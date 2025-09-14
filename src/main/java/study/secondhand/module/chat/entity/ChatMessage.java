@@ -1,6 +1,7 @@
 package study.secondhand.module.chat.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import study.secondhand.module.product.entity.Product;
 import study.secondhand.module.user.entity.User;
@@ -20,16 +21,20 @@ public class ChatMessage {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chat_room_id")
+    @JoinColumn(name = "chat_room_id", nullable = false)
     private ChatRoom chatRoom;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sender_id")
+    @JoinColumn(name = "sender_id", nullable = false)
     private User sender;
 
+    @Column(length = 500)
+    @Size(max = 500, message = "메시지는 500자를 초과할 수 없습니다.")
     private String content; // 일반 메시지
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
     private MessageType type = MessageType.TEXT;
 
     @Column(name = "is_read", nullable = false)
@@ -40,8 +45,10 @@ public class ChatMessage {
     @JoinColumn(name = "product_id")
     private Product product;
 
+    @Column(length = 2048)
     private String imageUrl;
 
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @OneToOne(mappedBy = "chatMessage", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -54,7 +61,9 @@ public class ChatMessage {
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
 
-        if (this.type != MessageType.TEXT && this.type != MessageType.IMAGE) {
+        if (this.type == MessageType.TEXT || this.type == MessageType.IMAGE) {
+            this.isRead = false;
+        } else {
             this.isRead = true;
         }
     }

@@ -18,11 +18,11 @@ public class ReviewMessage {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chat_message_id", nullable = false)
+    @JoinColumn(name = "chat_message_id", nullable = false, unique = true)
     private ChatMessage chatMessage;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "review_id", nullable = false)
+    @JoinColumn(name = "review_id", nullable = false, unique = true)
     private Review review;
 
     @ManyToOne(fetch = FetchType.LAZY)

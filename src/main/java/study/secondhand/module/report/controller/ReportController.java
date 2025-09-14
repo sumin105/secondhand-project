@@ -1,9 +1,11 @@
 package study.secondhand.module.report.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,8 +24,14 @@ public class ReportController {
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/user")
     public String reportUser(@AuthenticationPrincipal CustomUserDetails userDetails,
-                             @ModelAttribute UserReportDto dto,
+                             @Valid @ModelAttribute UserReportDto dto,
+                             BindingResult bindingResult,
                              RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("errorMessage", bindingResult.getAllErrors().get(0).getDefaultMessage());
+            return "redirect/shop/" + dto.getReportedUserId();
+        }
+
         try {
             reportService.userReport(userDetails.getUser(), dto);
             redirectAttributes.addFlashAttribute("successMessage", "신고가 접수되었습니다.");
@@ -36,8 +44,13 @@ public class ReportController {
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/product")
     public String reportProduct(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                @ModelAttribute ProductReportDto dto,
+                                @Valid @ModelAttribute ProductReportDto dto,
+                                BindingResult bindingResult,
                                 RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("errorMessage", bindingResult.getAllErrors().get(0).getDefaultMessage());
+            return "redirect:/products/" + dto.getReportedProductId();
+        }
         try {
             reportService.productReport(userDetails.getUser(), dto);
             redirectAttributes.addFlashAttribute("successMessage", "신고가 접수되었습니다.");

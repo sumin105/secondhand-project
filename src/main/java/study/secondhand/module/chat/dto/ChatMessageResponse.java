@@ -30,7 +30,8 @@ public record ChatMessageResponse(
         // review 메시지용
         Long reviewId,
         Long targetId,
-        Long writerId
+        Long writerId,
+        String writerNickname
 
 ) {
 
@@ -58,7 +59,7 @@ public record ChatMessageResponse(
                     orderMsg.getOrder().getId(),
                     role,
                     orderMsg.getTrackingUrl(),
-                    null, null, null
+                    null, null, null, null
             );
         } else if (entity.getType() == ChatMessage.MessageType.REVIEW) {
             ReviewMessage reviewMsg = entity.getReviewMessage();
@@ -77,7 +78,7 @@ public record ChatMessageResponse(
                         isRead,
                         null, null, null,
                         null, null, null, null,
-                        null, null, null
+                        null, null, null, null
                 );
             }
 
@@ -95,7 +96,10 @@ public record ChatMessageResponse(
                     null, null, null, null,
                     reviewMsg.getReview().getId(),
                     reviewMsg.getReview().getTarget().getId(),
-                    reviewMsg.getReview().getWriter().getId()
+                    reviewMsg.getReview().getWriter().getId(),
+                    reviewMsg.getReview().getWriter().getNickname() != null ?
+                            reviewMsg.getReview().getWriter().getNickname() :
+                            "상점 " + reviewMsg.getReview().getWriter().getId() + "호"
             );
         }
         // 일반 텍스트 메시지
@@ -110,7 +114,7 @@ public record ChatMessageResponse(
                 isRead,
                 null, null, null,
                 null, null, null, null,
-                null, null, null
+                null, null, null, null
         );
     }
 }

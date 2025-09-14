@@ -1,14 +1,13 @@
+let stompClient = null;
+
 document.addEventListener('DOMContentLoaded', function () {
     // 로그인된 사용자를 위한 UI 초기화
     function initializeUserUI() {
-        console.log("[DEBUG] initializeUserUI: 함수 실행 시작");
 
         // 로그아웃 버튼
         function handleLogout(event) {
             event.preventDefault();
-            console.log("-> [DEBUG] 로그아웃 버튼 클릭됨!");
 
-            console.log("-> [DEBUG] fetch /logout 요청 전송 시도...");
             fetch('/logout', {
                 method: 'POST',
                 credentials: 'include',
@@ -20,7 +19,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     window.location.href = '/';
                 })
                 .catch(error => {
-                    console.error("-> [DEBUG] 로그아웃 fetch 요청 실패:", error);
                     alert("로그아웃 중 오류가 발생했습니다.");
                     window.location.href = '/'; // 오류 발생시 홈으로
                 });
@@ -29,19 +27,16 @@ document.addEventListener('DOMContentLoaded', function () {
         const logoutBtn = document.getElementById('logoutBtn');
 
         if (logoutBtn) {
-            console.log("[DEBUG] initializeUserUI: 일반 로그아웃 버튼에 이벤트 리스너 추가");
             logoutBtn.addEventListener('click', handleLogout);
         }
 
         // 관리자 로그아웃
         const adminLogoutBtn = document.getElementById('adminLogoutBtn');
         if (adminLogoutBtn) {
-            console.log("[DEBUG] initializeUserUI: 관리자 로그아웃 버튼에 이벤트 리스너 추가");
             adminLogoutBtn.addEventListener('click', handleLogout);
         }
-        // 안 읽은 채팅 수 갱신
-        console.log("[DEBUG] initializeUserUI: updateNavUnreadCount 호출");
-        updateNavUnreadCount();
+
+        connectWebSocket();
     }
 
     // 로그인 안 된 사용자용 UI 초기화
@@ -73,17 +68,13 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             if (response.status === 201) {
-                console.log("Silent refresh successful. Reloading page to apply UI changes.");
                 window.location.reload();
             } else if (response.ok) {
-                console.log("Login status confirmed. Initializing user UI.");
                 initializeUserUI();
             } else {
-                console.log("Login status check failed. Initializing guest UI.");
                 initializeGuestUI();
             }
         } catch (error) {
-            console.error("Error during login status check:", error);
             initializeGuestUI();
         }
     })();
@@ -117,12 +108,9 @@ function fetchWithRefresh(url, options = {}) {
 
     return fetch(url, customOptions)
         .then(res => {
-            console.log(`[API 요청] 주소: ${url}, 상태: ${res.status}`);
-
             if (res.ok) return res;
 
             if (res.status === 401) {
-                console.log("-> 401 에러 감지! 토큰 재발급을 시도합니다.");
 
                 // accessToken 만료 시 refresh 시도
                 return fetch('/api/token/refresh', {
@@ -132,13 +120,10 @@ function fetchWithRefresh(url, options = {}) {
                         [csrfHeader]: csrfToken
                     }
                 }).then(refreshRes => {
-                    console.log("-> 재발급 API(/api/token/refresh) 응답 상태:", refreshRes.status);
-
                     if (!refreshRes.ok) {
                         throw new Error("토큰 재발급 실패");
                     }
                     // 토큰 재발급 성공 -> 원래 요청 재시도
-                    console.log("-> 토큰 재발급 성공! 원래 요청을 재시도합니다.");
                     return fetch(url, customOptions);
                 });
             }
@@ -146,18 +131,56 @@ function fetchWithRefresh(url, options = {}) {
         });
 }
 
+// 웹소켓 연결 및 구독
+function connectWebSocket() {
+    const loginUserId = document.body.dataset.userId;
+    if (loginUserId) {
+        const socket = new SockJS('/ws');
+        // 전역 변수 stompClient에 할당
+        stompClient = StompJs.Stomp.over(socket);
+        stompClient.debug = () => {};
+
+        stompClient.connect({}, function (frame) {
+
+            // 전체 안 읽은 개수 토픽 구독
+            stompClient.subscribe('/topic/unread-count/' + loginUserId, function (message) {
+                const count = JSON.parse(message.body);
+                displayNavUnreadCount(count); // UI 업데이트
+            });
+
+            // 개인 에러 메시지 토빅 구독
+            stompClient.subscribe('/user/queue/error', function (message) {
+                const errorMessage = message.body;
+                console.error("WebSocket Error Received:", errorMessage);
+                alert(errorMessage);
+            });
+
+            // 페이지 로드 시, 웹소켓 연결 성공 직후 최신 안 읽은 개수 가져오기
+            updateNavUnreadCount();
+        });
+    } else {
+        // 비로그인 사용자는 웹소켓 연결 없이 API로만 개수 가져오기
+        updateNavUnreadCount();
+    }
+
+}
+
+function displayNavUnreadCount(count) {
+    const navBadge = document.getElementById("nav-unread-count");
+    if (!navBadge) return;
+    if (count > 0) {
+        navBadge.textContent = count > 99 ? "99+" : count;
+        navBadge.style.display = "inline-block";
+    } else {
+        navBadge.style.display = "none";
+    }
+}
+
 function updateNavUnreadCount() {
     fetchWithRefresh('/api/chat/unread-count')
         .then(res => res.json())
         .then(count => {
-            const navBadge = document.getElementById("nav-unread-count");
-            if (!navBadge) return;
-            if (count > 0) {
-                navBadge.textContent = count > 99 ? "99+" : count;
-                navBadge.style.display = "inline-block";
-            } else {
-                navBadge.style.display = "none";
-            }
+            displayNavUnreadCount(count);
         })
         .catch(err => console.error("네비바 안 읽은 메시지 수 갱신 실패:", err));
 }

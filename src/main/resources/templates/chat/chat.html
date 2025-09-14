@@ -4,14 +4,15 @@
       layout:decorate="~{layout}">
 <head>
     <meta charset="UTF-8">
-    <meta name="_csrf" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>채팅</title>
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
     <link rel="stylesheet" th:href="@{/css/chat/chat.css}">
 </head>
-<body th:attr="data-room-id=${viewData.roomId}, data-sender-id=${viewData.loginUser.id}, data-sender-id=${viewData.receiverId}">
+<body th:attr="data-room-id=${viewData.roomId},
+data-sender-id=${viewData.loginUser.id},
+data-receiver-id=${viewData.receiverId},
+data-receiver-withdrawn=${viewData.receiverWithdrawn}">
 <main layout:fragment="content">
     <div class="chat-container">
         <!-- 채팅방 목록 -->
@@ -65,18 +66,21 @@
             </h2>
 
             <div id="chat-box"></div>
+
             <div class="d-flex gap-2 align-items-center">
                 <label for="messageInput" class="visually-hidden">메시지 입력</label>
-                <input type="text" id="messageInput" class="form-control" placeholder="메시지 입력"/>
+                <input type="text" id="messageInput" class="form-control" placeholder="메시지 입력" maxlength="500"/>
 
                 <!-- 사진 -->
-                <label for="imageInput" id="imageUploadLabel" class="btn btn-outline-secondary mb-0">
+                <label for="imageInput" id="imageUploadLabel" class="btn btn-outline-secondary mb-0"
+                       title="최대 10MB까지 전송 가능합니다.">
                     <i class="bi bi-image"></i>
                 </label>
-                <input type="file" id="imageInput" accept="image/*" class="d-none" />
+                <input type="file" id="imageInput" accept="image/*" class="d-none"/>
 
                 <button id="sendMessageBtn" class="btn btn-primary">보내기</button>
             </div>
+
         </div>
     </div>
 

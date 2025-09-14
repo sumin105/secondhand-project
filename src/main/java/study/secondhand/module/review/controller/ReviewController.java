@@ -1,11 +1,13 @@
 package study.secondhand.module.review.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import study.secondhand.global.oauth2.CustomUserDetails;
@@ -32,7 +34,7 @@ public class ReviewController {
             ReviewFormViewDto viewData = reviewService.getReviewFormData(orderId, userDetails.getUser());
             model.addAttribute("review", viewData);
             return "review/review-form";
-        } catch (AccessDeniedException e) {
+        } catch (AccessDeniedException | IllegalStateException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/";
         }
@@ -42,8 +44,13 @@ public class ReviewController {
     @PostMapping("/orders/{id}/reviews")
     public String createReview(@AuthenticationPrincipal CustomUserDetails userDetails,
                                @PathVariable("id") Long orderId,
-                               @ModelAttribute ReviewRequestDto dto,
+                               @Valid @ModelAttribute ReviewRequestDto dto,
+                               BindingResult bindingResult,
                                RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("errorMessage", bindingResult.getAllErrors().get(0).getDefaultMessage());
+            return "redirect:/orders/" + orderId + "/reviews/new";
+        }
 
         try {
             Review review = reviewService.createReviewAndSend(orderId, dto, userDetails.getUser());

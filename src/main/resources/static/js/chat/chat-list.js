@@ -1,6 +1,5 @@
-let stompClient = null;
 const roomId = window.roomId || 0;
-const loginUserId = window.loginUserId || 0;
+const loginUserId = document.body.dataset.userId;
 
 function updateChatRoomUI(update) {
     const roomItem = document.querySelector(`.chat-room-item[data-room-id='${update.roomId}']`);
@@ -23,25 +22,14 @@ function updateChatRoomUI(update) {
     } else {
         if (badgeSpan) badgeSpan.remove();
     }
-
-    updateNavUnreadCount();
 }
 
-function connectWebSocket() {
-    const socket = new SockJS('/ws');
-    stompClient = StompJs.Stomp.over(socket);
+function subscribeToChatListTopics() {
 
-    stompClient.connect({}, function () {
-        console.log('웹소켓 연결 완료');
-
-        // 로그인 유저에게 보내는 채팅방 업데이트 수신
-        stompClient.subscribe('/topic/chat-room/' + loginUserId, function (message) {
-            const update = JSON.parse(message.body);
-            console.log("수신된 chat-room 메시지:", update);
-            updateChatRoomUI(update);
-        });
-    }, function (error) {
-        console.error('웹소켓 연결 에러:', error);
+    // 로그인 유저에게 오는 모든 채팅방 업데이트 수신
+    stompClient.subscribe('/topic/chat-room/' + loginUserId, function (message) {
+        const update = JSON.parse(message.body);
+        updateChatRoomUI(update);
     });
 }
 
@@ -57,6 +45,18 @@ function initializeChatList() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    connectWebSocket();
+    // layout.js의 stompClient 연결을 기다린 후 구독 시작
+    function waitForSocketConnection(callback) {
+        setTimeout(function () {
+            // layout.js에 선언된 전역 stompClient를 확인
+            if (typeof stompClient !== 'undefined' && stompClient && stompClient.connected) {
+                callback();
+            } else {
+                waitForSocketConnection(callback);
+            }
+        }, 100);
+    }
+
+    waitForSocketConnection(subscribeToChatListTopics);
     initializeChatList();
 });

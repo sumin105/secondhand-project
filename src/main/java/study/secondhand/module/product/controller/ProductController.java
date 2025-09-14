@@ -1,12 +1,15 @@
 package study.secondhand.module.product.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import study.secondhand.global.oauth2.CustomUserDetails;
@@ -24,6 +27,9 @@ import java.util.List;
 @Controller
 @RequiredArgsConstructor
 public class ProductController {
+
+    @Value("${kakao.javascript.key}")
+    private String kakaoJavascriptKey;
 
     private final ProductService productService;
     private final UserService userService;
@@ -81,6 +87,7 @@ public class ProductController {
                               Model model) {
         ProductDetailDto productDetailDto = productService.getProductDetailDto(id, user, fromOrder);
         model.addAttribute("product", productDetailDto);
+        model.addAttribute("kakaoJavascriptKey", kakaoJavascriptKey);
 
         if (productDetailDto.isDeleted()) {
             return "product/product-deleted";
@@ -99,9 +106,16 @@ public class ProductController {
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/products")
-    public String createProduct(@ModelAttribute ProductRequestDto dto,
+    public String createProduct(@Valid @ModelAttribute ProductRequestDto dto,
+                                BindingResult bindingResult,
                                 @AuthenticationPrincipal CustomUserDetails userDetails,
                                 RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            String errorMessage = bindingResult.getAllErrors().get(0).getDefaultMessage();
+            redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
+            return "redirect:/products/new";
+        }
+
         try {
             Long productId = productService.createProduct(dto, userDetails.getUser());
             return "redirect:/products/" + productId;
@@ -130,10 +144,17 @@ public class ProductController {
     @PreAuthorize("isAuthenticated()")
     @PutMapping("/products/{id}")
     public String updateProduct(@PathVariable("id") Long productId,
-                                @ModelAttribute ProductRequestDto dto,
+                                @Valid @ModelAttribute ProductRequestDto dto,
+                                BindingResult bindingResult,
                                 @RequestParam(value = "deletedImageIds", required = false) List<Long> deletedImageIds,
                                 @AuthenticationPrincipal CustomUserDetails userDetails,
                                 RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            String errorMessage = bindingResult.getAllErrors().get(0).getDefaultMessage();
+            redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
+            return "redirect:/products/" + productId + "/edit";
+        }
+
         try {
             productService.updateProduct(productId, dto, deletedImageIds, userDetails.getUser());
             return "redirect:/products/" + productId;

@@ -39,7 +39,6 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
 
-    // 개발용 csp 설정 bean
     @Bean
     @Profile("dev")
     public SecurityFilterChain securityFilterChainDev(HttpSecurity http, CustomOAuth2FailureHandler customOAuth2FailureHandler, CustomOAuth2SuccessHandler customOAuth2SuccessHandler, RefererSaveFilter refererSaveFilter, CustomLogoutHandler customLogoutHandler) throws Exception {
@@ -114,7 +113,7 @@ public class SecurityConfig {
 
                 )
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션 사용 x
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // CSRF 토큰 관리용
                 )
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, authException) -> {
@@ -151,7 +150,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // 운영용 CSP 설정 bean
     @Bean
     @Profile("prod")
     public SecurityFilterChain securityFilterChainProd(HttpSecurity http, CustomOAuth2FailureHandler customOAuth2FailureHandler, CustomOAuth2SuccessHandler customOAuth2SuccessHandler, RefererSaveFilter refererSaveFilter, CustomLogoutHandler customLogoutHandler) throws Exception {
@@ -166,7 +164,7 @@ public class SecurityConfig {
                 .cors(cors -> cors
                         .configurationSource(request -> {
                             var config = new CorsConfiguration();
-                            config.setAllowedOrigins(List.of("http://localhost:8080")); // 실제 서비스 주소로 바꾸기
+                            config.setAllowedOrigins(List.of("http://15.164.226.128"));
                             config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                             config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X_CSRF_TOKEN", "X-XSRF-TOKEN"));
                             config.setAllowCredentials(true);
@@ -174,26 +172,21 @@ public class SecurityConfig {
                         })
                 )
                 .headers(headers -> headers
-//                        .httpStrictTransportSecurity(hsts -> hsts
-//                                .includeSubDomains(true)
-//                                .maxAgeInSeconds(31536000)
-//                        )
-//                        .contentTypeOptions(HeadersConfigurer.ContentTypeOptionsConfig::disable)
-                                .contentSecurityPolicy(csp -> csp
-                                        .policyDirectives("default-src 'self'; " +
-                                                "font-src 'self' https://cdn.jsdelivr.net; " +
-                                                "style-src 'self' https://cdn.jsdelivr.net; " +
-                                                "script-src 'self' https://cdn.jsdelivr.net https://cdn.portone.io https://t1.daumcdn.net https://dapi.kakao.com; " +
-                                                "img-src 'self' data: https://*.daumcdn.net https://*.kakaocdn.net; " +
-                                                "connect-src 'self' https://checkout-service.prod.iamport.co https://dapi.kakao.com; " +
-                                                "object-src 'none'; " +
-                                                "frame-src 'self' https://cdn.portone.io https://checkout-service.prod.iamport.co https://payment-gateway-sandbox.tosspayments.com https://postcode.map.daum.net; " +
-                                                "child-src 'self' https://cdn.portone.io https://checkout-service.prod.iamport.co https://payment-gateway-sandbox.tosspayments.com https://postcode.map.daum.net; " +
-                                                "frame-ancestors 'none';"
-                                        )
+                        .contentSecurityPolicy(csp -> csp
+                                .policyDirectives("default-src 'self'; " +
+                                        "font-src 'self' https://cdn.jsdelivr.net; " +
+                                        "style-src 'self' https://cdn.jsdelivr.net; " +
+                                        "script-src 'self' https://cdn.jsdelivr.net https://cdn.portone.io https://t1.daumcdn.net http://t1.daumcdn.net https://dapi.kakao.com; " +
+                                        "img-src 'self' data: https://*.daumcdn.net http://*.daumcdn.net https://*.kakaocdn.net; " +
+                                        "connect-src 'self' https://checkout-service.prod.iamport.co http://dapi.kakao.com; " +
+                                        "object-src 'none'; " +
+                                        "frame-src 'self' https://cdn.portone.io https://checkout-service.prod.iamport.co https://payment-gateway-sandbox.tosspayments.com https://postcode.map.daum.net http://postcode.map.daum.net; " +
+                                        "child-src 'self' https://cdn.portone.io https://checkout-service.prod.iamport.co https://payment-gateway-sandbox.tosspayments.com https://postcode.map.daum.net http://postcode.map.daum.net; " +
+                                        "frame-ancestors 'none';"
                                 )
-                                .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
-                                .referrerPolicy(referrer -> referrer.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.SAME_ORIGIN))
+                        )
+                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
+                        .referrerPolicy(referrer -> referrer.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.SAME_ORIGIN))
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
@@ -204,11 +197,13 @@ public class SecurityConfig {
                                 "/products/**",
                                 "/shop/**",
                                 "/search",
-                                "/chat/**",
+                                "/chat",
+                                "/chat/user/**",
                                 "/api/token/refresh",
                                 "/api/auth/status",
                                 "/static/**", "/css/**", "/js/**", "/images/**", "/webjars/**", "/favicon.ico"
                         ).permitAll()
+                        .requestMatchers("/api/chat/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
@@ -228,7 +223,7 @@ public class SecurityConfig {
                         .clearAuthentication(true) // 인증 정보 제거
                 )
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션 사용 x
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // CSRF 토큰 관리용
                 )
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, authException) -> {

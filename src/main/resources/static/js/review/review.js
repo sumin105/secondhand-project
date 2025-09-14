@@ -1,6 +1,4 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const csrfToken = document.querySelector("meta[name='_csrf']")?.getAttribute("content");
-    const csrfHeader = document.querySelector("meta[name='_csrf_header']")?.getAttribute("content");
 
     function deleteReview(reviewId) {
         if (!confirm("정말로 후기를 삭제하시겠습니까?")) {

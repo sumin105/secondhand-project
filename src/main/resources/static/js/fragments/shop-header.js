@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const introInput = document.getElementById("intro");
     const saveButton = document.getElementById("saveButton");
     const form = document.querySelector('form[data-has-withdraw-error]');
+    const nicknameError = document.getElementById("nicknameError");
 
     const hasWithdrawError = form?.dataset.hasWithdrawError === "true";
     if (hasWithdrawError) {
@@ -18,6 +19,29 @@ document.addEventListener("DOMContentLoaded", function () {
         countSpan.textContent = introInput.value.length;
     }
 
+    function validateNickname() {
+        const nickname = nicknameInput.value;
+
+        // '상점..호' 패턴 정규식
+        const reservedPattern = /^상점\s*\d+호$/;
+        // 기존 형식 유효성 검사 정규식
+        const formatPattern = /^(?=.*[a-zA-Z가-힣])[a-zA-Z0-9가-힣]{2,12}$/;
+
+        if (reservedPattern.test(nickname)) {
+            nicknameInput.classList.add("is-invalid");
+            nicknameError.textContent = "'상점...호' 형식의 닉네임은 사용할 수 없습니다.";
+            return false;
+        } else if (!formatPattern.test(nickname)) {
+            nicknameInput.classList.add("is-invalid");
+            nicknameError.textContent = "2~12자의 한글/영문 또는 숫자 조합이어야 하며, 숫자만으로는 만들 수 없습니다.";
+            return false;
+        } else {
+            nicknameInput.classList.remove("is-invalid");
+            nicknameError.textContent = "";
+            return true;
+        }
+    }
+
     function toggleSaveButton() {
         const currentNickname = nicknameInput.value.trim();
         const currentIntro = introInput.value.trim();
@@ -25,8 +49,10 @@ document.addEventListener("DOMContentLoaded", function () {
         const isEmpty = (currentNickname === "" && currentIntro === "");
         const isUnchanged = (currentNickname === originalNickname && currentIntro === originalIntro);
 
-        // 둘다 비어있거나 변경사항 없으면 비활성화
-        saveButton.disabled = isEmpty || isUnchanged;
+        const isNicknameValid = validateNickname();
+
+        // 둘다 비어있거나 변경사항 없거나, 닉네임이 유효하지 않으면 비활성화
+        saveButton.disabled = isEmpty || isUnchanged || !isNicknameValid;
     }
 
     nicknameInput.addEventListener("input", function () {
@@ -42,10 +68,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
     if (confirmDeleteBtn) {
         confirmDeleteBtn.addEventListener('click', function () {
-            const deleteModalButton = document.querySelector('button[data-bs-target="#deleteConfirmModal"]');
-            const csrfToken = deleteModalButton.dataset.csrfToken;
-            const csrfHeader = deleteModalButton.dataset.csrfHeader;
-
             const errorDiv = document.getElementById('withdrawErrorMessage');
             errorDiv.innerText = '';
             errorDiv.classList.add('d-none');
@@ -63,8 +85,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     } else {
                         // 400 Bad Request 등
                         return response.text().then(errorMessage => {
-                            console.log("서버로부터 받은 에러 메시지:", errorMessage);
-                            console.log("에러를 표시할 DIV 요소:", errorDiv);
 
                             if (errorDiv) {
                                 errorDiv.innerText = errorMessage;
@@ -95,8 +115,39 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // 최초 상태 초기화
-    updateIntroCharCount();
-    toggleSaveButton();
+    if (introInput) {
+        updateIntroCharCount();
+        toggleSaveButton();
+    }
 
+    const reportUserModal = document.getElementById('reportUserModal');
+    if (reportUserModal) {
+        const reasonSelect = document.getElementById('reportReason');
+        const descriptionTextarea = document.getElementById('reportDescription');
+        const descCountSpan = document.getElementById('reportDescCount');
+        const submitBtn = document.getElementById('reportSubmitBtn');
 
+        function toggleUserReportSubmitButton() {
+            if (reasonSelect.value) {
+                submitBtn.disabled = false;
+            } else {
+                submitBtn.disabled = true;
+            }
+        }
+
+        function updateDescriptionCount() {
+            if (descCountSpan) {
+                descCountSpan.textContent = descriptionTextarea.value.length;
+            }
+        }
+
+        reasonSelect.addEventListener('change', toggleUserReportSubmitButton);
+        descriptionTextarea.addEventListener('input', updateDescriptionCount);
+
+        reportUserModal.addEventListener('show.bs.modal', function () {
+            reportUserModal.querySelector('form').reset();
+            toggleUserReportSubmitButton();
+            updateDescriptionCount();
+        });
+    }
 });

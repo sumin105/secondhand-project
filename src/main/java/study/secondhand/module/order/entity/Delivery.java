@@ -15,13 +15,15 @@ public class Delivery {
 
     @Setter
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "payment_id", nullable = false)
+    @JoinColumn(name = "payment_id", nullable = false, unique = true)
     private Payment payment;
 
     @Setter
+    @Column(length = 50)
     private String deliveryCompany; // 택배 회사 (ex. CJ, 한진, 편의점, 반값 등)
 
     @Setter
+    @Column(length = 30)
     private String trackingNumber; // 운송장 번호
 
     @Setter
@@ -30,32 +32,39 @@ public class Delivery {
     private DeliveryStatus deliveryStatus = DeliveryStatus.READY;
 
     @Setter
+    @Column(length = 2048)
     private String trackingUrl;
 
     @Setter
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     private String recipientName;
 
     @Setter
-    @Column(nullable = false)
+    @Column(nullable = false, length = 15)
     private String recipientPhone;
 
     @Setter
+    @Column(length = 255)
     private String address;
 
     @Setter
+    @Column(length = 255)
     private String detailAddress;
 
     @Setter
+    @Column(length = 6)
     private String postCode;
 
     @Setter
+    @Column(length = 30)
     private String storeName;
 
     @Setter
+    @Column(length = 255)
     private String storeAddress;
 
     @Setter
+    @Column(length = 255)
     private String requestMessage;
 
     public enum DeliveryStatus {

@@ -18,18 +18,18 @@ import study.secondhand.module.user.service.UserService;
 
 @Service
 public class SystemMessageService {
-    private final ChatMessageRepository chatMessageRepository;
     private final OrderMessageRepository orderMessageRepository;
     private final ReviewMessageRepository reviewMessageRepository;
     private final ChatService chatService;
     private final UserService userService;
+    private final ChatMessageRepository chatMessageRepository;
 
-    public SystemMessageService(ChatMessageRepository chatMessageRepository, OrderMessageRepository orderMessageRepository, ReviewMessageRepository reviewMessageRepository, ChatService chatService, @Lazy UserService userService) {
-        this.chatMessageRepository = chatMessageRepository;
+    public SystemMessageService(OrderMessageRepository orderMessageRepository, ReviewMessageRepository reviewMessageRepository, @Lazy ChatService chatService, @Lazy UserService userService, ChatMessageRepository chatMessageRepository) {
         this.orderMessageRepository = orderMessageRepository;
         this.reviewMessageRepository = reviewMessageRepository;
         this.chatService = chatService;
         this.userService = userService;
+        this.chatMessageRepository = chatMessageRepository;
     }
 
     // 주문 생성 메시지
@@ -64,7 +64,7 @@ public class SystemMessageService {
         ChatRoom room = chatService.getOrCreateRoom(order.getBuyer(), order.getSeller());
 
         ChatMessage message = buildChatMessage(systemUser, room, product, ChatMessage.MessageType.REVIEW);
-        chatMessageRepository.save(message);
+        ChatMessage savedMessage = chatMessageRepository.save(message);
 
         ReviewMessage reviewMessage = ReviewMessage.builder()
                 .chatMessage(message)
@@ -72,6 +72,9 @@ public class SystemMessageService {
                 .product(product)
                 .build();
         reviewMessageRepository.save(reviewMessage);
+
+        savedMessage.setReviewMessage(reviewMessage);
+        chatService.broadcastSystemMessage(savedMessage);
     }
 
     private void sendOrderSystemMessage(Order order, Product product, String trackingUrl) {
@@ -79,7 +82,7 @@ public class SystemMessageService {
         ChatRoom room = chatService.getOrCreateRoom(order.getBuyer(), order.getSeller());
 
         ChatMessage message = buildChatMessage(systemUser, room, product, ChatMessage.MessageType.ORDER);
-        chatMessageRepository.save(message);
+        ChatMessage savedMessage = chatMessageRepository.save(message);
 
         OrderMessage orderMessage = OrderMessage.builder()
                 .chatMessage(message)
@@ -89,6 +92,9 @@ public class SystemMessageService {
                 .trackingUrl(trackingUrl) // null일 경우 자동 무시됨
                 .build();
         orderMessageRepository.save(orderMessage);
+
+        savedMessage.setOrderMessage(orderMessage);
+        chatService.broadcastSystemMessage(savedMessage);
     }
 
     private ChatMessage buildChatMessage(User systemUser, ChatRoom room, Product product, ChatMessage.MessageType type) {

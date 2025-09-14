@@ -59,10 +59,13 @@
         <!-- 자유 작성 후기 -->
         <div>
             <label for="content"><strong>추가 후기 작성하기</strong></label><br>
-            <textarea id="content" name="content" rows="6" placeholder="직거래/택배 거래는 어땠나요?"></textarea>
+            <textarea id="content" name="content" rows="6" placeholder="직거래/택배 거래는 어땠나요?" maxlength="1000"></textarea>
+            <div class="char-counter">
+                <span id="charCount">0</span> / 1000
+            </div>
         </div>
         <br>
-        <button type="submit" class="review-submit-btn">후기 등록</button>
+        <button type="submit" class="review-submit-btn" id="reviewSubmitBtn">후기 등록</button>
     </form>
     <script th:src="@{/js/review/review-form.js}"></script>
 </div>

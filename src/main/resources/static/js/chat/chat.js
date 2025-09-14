@@ -1,10 +1,12 @@
-let stompClient = null;
 let selectedImageFile = null;
 const roomId = parseInt(document.body.dataset.roomId);
 const senderId = parseInt(document.body.dataset.senderId);
 
-const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute("content");
-const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute("content");
+const isReceiverWithdrawn = document.body.dataset.receiverWithdrawn === 'true';
+
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_TEXT_LENGTH = 500;
 
 function isSameDay(date1, date2) {
     return date1.getFullYear() === date2.getFullYear() &&
@@ -21,7 +23,6 @@ function formatTime(isoString) {
     return date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
 }
 
-// 새로 추가한 부분
 function updateChatRoomUI(update) {
     const roomItem = document.querySelector(`.chat-room-item[data-room-id='${update.roomId}']`);
     if (!roomItem) return;
@@ -48,7 +49,6 @@ function updateChatRoomUI(update) {
 }
 
 function appendMessage(msg) {
-    console.log("실시간 수신된 메시지:", msg);
 
     const chatBox = document.getElementById("chat-box");
     const imMe = msg.senderId === senderId;
@@ -125,7 +125,7 @@ function appendMessage(msg) {
             centerText.textContent = "작성한 후기는 다른 거래에 큰 도움이 됩니다!";
         } else if (msg.targetId === senderId) {
             topText.textContent = "후기가 도착했어요.";
-            centerText.textContent = `${msg.targetId}님이 후기를 남겼어요!`;
+            centerText.textContent = `${msg.writerNickname}님이 후기를 남겼어요!`;
         }
         card.appendChild(topText);
         card.appendChild(centerText);
@@ -228,73 +228,16 @@ function loadPreviousMessages() {
         });
 }
 
-function connect() {
-    const socket = new SockJS('/ws'); // 백엔드 WebSocketConfig와 일치
-    stompClient = StompJs.Stomp.over(socket);
-
-    stompClient.connect({}, function (frame) {
-        console.log('connected: ' + frame);
-
-        // 채팅방 메시지 수신
-        stompClient.subscribe('/topic/chat/' + roomId, function (message) {
-            const msg = JSON.parse(message.body);
-
-            appendMessage(msg);
-
-            // 현재 이 채팅방을 열어둔 상태이므로, 실시간으로 읽음 처리
-            fetch(`/api/chat/${roomId}/messages/read`, {
-                method: "POST",
-                headers: {
-                    [csrfHeader]: csrfToken
-                }
-            })
-                .then(res => {
-                    if (!res.ok) throw new Error("실시간 읽음 처리 실패");
-
-                    // 뱃지가 다시 생겼다면 제거
-                    const badgeSpan = document.querySelector(`.chat-room-item[onclick*='${roomId}'] .badge`);
-                    if (badgeSpan) badgeSpan.remove();
-
-                    updateNavUnreadCount();
-
-                    console.log("실시간 읽음 처리 완료");
-                })
-                .catch(err => {
-                    console.error("실시간 읽음 처리 오류:", err);
-                });
-        });
-
-        // 채팅방 목록 UI 업데이트 수신
-        stompClient.subscribe('/topic/chat-room/' + senderId, function (message) {
-            const update = JSON.parse(message.body);
-            updateChatRoomUI(update);
-        });
-
-        // 읽음 알림 수신 처리
-        stompClient.subscribe('/topic/chat-read/' + senderId, function (message) {
-            console.log("상대방이 내 메시지를 읽음 (전체 '안읽음' 제거)");
-
-            // 내가 보낸 메시지 중 unread-mark가 있는 것들 제거
-            document.querySelectorAll('.message-wrapper.me .unread-mark').forEach(unreadSpan => {
-                unreadSpan.remove();
-            });
-        });
-
-    }, function (error) {
-        console.error('stomp 연결 에러:', error);
-        alert('웹소켓 연결에 실패했습니다. 페이지를 새로고침 해주세요.');
-    });
-}
-
 function sendMessage() {
-    const content = document.getElementById("messageInput").value.trim();
+    const messageInput = document.getElementById("messageInput");
+    const content = messageInput.value.trim();
 
     if (!stompClient || !stompClient.connected) {
         alert("웹소켓 연결이 완료되지 않았습니다. 잠시 후 다시 시도해 주세요.");
         return;
     }
 
-    // 1. 이미지 전송하는 경우
+    // 1. 이미지 전송
     if (selectedImageFile) {
         const formData = new FormData();
         formData.append("image", selectedImageFile);
@@ -324,16 +267,16 @@ function sendMessage() {
 
                 document.querySelector('.image-preview-wrapper')?.remove();
                 selectedImageFile = null;
+                handleTextInput();
             })
             .catch(err => {
                 alert("이미지 전송 중 오류 발생");
                 console.error(err);
             });
-
         return; // 이미지 전송 시 일반 텍스트는 무시
     }
 
-    // 2. 일반 텍스트 메시지 전송
+    // 2. 텍스트 메시지 전송
     if (content === '') return;
 
     stompClient.send("/app/chat/" + roomId, {}, JSON.stringify({
@@ -342,8 +285,9 @@ function sendMessage() {
         content: content,
         messageType: "TEXT"
     }));
-    console.log("메시지 전송 시도:", roomId, senderId, content);
-    document.getElementById("messageInput").value = '';
+
+    messageInput.value = '';
+    handleTextInput();
 }
 
 // 이미지 전송
@@ -352,14 +296,18 @@ function sendImageMessage() {
     const file = fileInput.files[0];
     if (!file) return;
 
+    if (file.size > MAX_FILE_SIZE) {
+        alert(`이미지 파일 용량이 너무 큽니다. (최대 10MB)`);
+        fileInput.value = ''; // input 초기화
+        return;
+    }
+
     selectedImageFile = file;
 
     const reader = new FileReader();
     reader.onload = function (e) {
         const previewUrl = e.target.result;
-
         const chatBox = document.getElementById("chat-box");
-
         const existingPreview = document.querySelector('.image-preview-wrapper');
         if (existingPreview) existingPreview.remove();
 
@@ -379,6 +327,7 @@ function sendImageMessage() {
         removeBtn.onclick = () => {
             wrapper.remove();
             selectedImageFile = null;
+            handleTextInput();
         }
 
         imagePreviewContainer.appendChild(imageElement);
@@ -387,14 +336,14 @@ function sendImageMessage() {
         chatBox.appendChild(wrapper);
         chatBox.scrollTop = chatBox.scrollHeight;
 
-        // ▶️ 실제 업로드 로직은 여기에서 추가로 구현 필요
-        // 예: formData로 서버 전송 후 imageUrl 받아와 WebSocket 전송 등
+        handleTextInput();
     };
     reader.readAsDataURL(file);
     fileInput.value = ''; // 초기화
 }
 
-// 초기화: 이전 메시지 불러온 후 읽음 처리, 그 다음 웹소켓 연결
+// 페이지 초기화
+// 이전 메시지 불러온 후 읽음 처리
 loadPreviousMessages()
     .then(() => {
         return fetch(`/api/chat/${roomId}/messages/read`, {
@@ -406,20 +355,109 @@ loadPreviousMessages()
     })
     .then(res => {
         if (!res.ok) throw new Error("읽음 처리 실패");
-
-        const badgeSpan = document.querySelector(`.chat-room-item[onclick*='${roomId}'] .badge`);
-        if (badgeSpan) badgeSpan.remove();
-
-        console.log("읽음 처리 완료 + UI 뱃지 제거");
     })
     .catch(err => {
-        console.error("읽음 처리 오류:", err);
-    })
-    .finally(() => {
-        connect(); // 무조건 connect는 실행되게
+        console.error("초기화 중 오류:", err);
     });
 
+// layout.js의 stompClient 연결을 기다린 후, 이 페이지에 필요한 구독만 추가
+function subscribeToChatTopics() {
+
+    // 채팅방 메시지 수신 구독
+    stompClient.subscribe('/topic/chat/' + roomId, function (message) {
+        const msg = JSON.parse(message.body);
+        const imMe = msg.senderId === senderId;
+
+        appendMessage(msg);
+
+        // 받은 메시지가 내가 보낸 것이 아니면 읽음 처리 API 호출
+        if (!imMe) {
+            fetch(`/api/chat/${roomId}/messages/read`, {
+                method: "POST",
+                headers: {
+                    [csrfHeader]: csrfToken
+                }
+            }).then(res => {
+                if (!res.ok) {
+                    throw new Error("실시간 읽음 처리 API 호출 실패");
+                }
+            }).catch(error => console.error(error));
+        }
+    });
+
+    // 채팅방 목록 UI 업데이트 수신 구독 (chat-list.js와 중복되지만, 현재 페이지에서도 필요)
+    stompClient.subscribe('/topic/chat-room/' + senderId, function (message) {
+        const update = JSON.parse(message.body);
+        updateChatRoomUI(update);
+    });
+
+    // 읽음 알림 수신 구독
+    stompClient.subscribe('/topic/chat-read/' + senderId, function (message) {
+        document.querySelectorAll('.message-wrapper.me .unread-mark').forEach(unreadSpan => {
+            unreadSpan.remove();
+        });
+    });
+}
+
+// stompClient가 연결될 때까지 주기적으로 확인 후 구독 실행
+function waitForSocketConnection(callback) {
+    setTimeout(function () {
+        // layout.js에 선언된 전역 stompClient를 확인
+        if (typeof stompClient !== 'undefined' && stompClient && stompClient.connected) {
+            callback();
+        } else {
+            waitForSocketConnection(callback);
+        }
+    }, 100); // 0.1초마다 확인
+}
+
+// 페이지 로딩 시 웹소켓 연결을 기다렸다가 구독 시작
+waitForSocketConnection(subscribeToChatTopics);
+
+let messageInput;
+let sendBtn;
+
+function handleTextInput() {
+    if (!messageInput || !sendBtn) {
+        return;
+    }
+    const currentLength = messageInput.value.length;
+
+    if (currentLength > MAX_TEXT_LENGTH || (currentLength === 0 && !selectedImageFile)) {
+        sendBtn.disabled = true;
+    } else {
+        sendBtn.disabled = false;
+    }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+    messageInput = document.getElementById("messageInput");
+    sendBtn = document.getElementById("sendMessageBtn");
+    const imageInput = document.getElementById("imageInput");
+    const imageUploadLabel = document.getElementById("imageUploadLabel");
+
+    // 상대방이 탈퇴시 UI
+    if (isReceiverWithdrawn) {
+        messageInput.disabled = true;
+        messageInput.placeholder = "상대방이 탈퇴하여 메시지를 보낼 수 없습니다.";
+
+        sendBtn.disabled = true;
+        imageUploadLabel.style.pointerEvents = "none";
+        imageUploadLabel.style.opacity = "0.5";
+    } else {
+        sendBtn?.addEventListener("click", sendMessage);
+
+        messageInput?.addEventListener("keydown", function (event) {
+            if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+
+        messageInput?.addEventListener("input", handleTextInput);
+        imageInput?.addEventListener("change", sendImageMessage);
+    }
+
     const chatRoomItems = document.querySelectorAll(".chat-room-item");
     chatRoomItems.forEach(item => {
         item.addEventListener("click", () => {
@@ -430,9 +468,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    const sendBtn = document.getElementById("sendMessageBtn");
-    sendBtn?.addEventListener("click", sendMessage);
-
-    const imageInput = document.getElementById("imageInput");
-    imageInput?.addEventListener("change", sendImageMessage);
+    handleTextInput();
 });
+

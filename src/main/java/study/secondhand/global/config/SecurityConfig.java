@@ -67,7 +67,7 @@ public class SecurityConfig {
                                         "style-src 'self' https://cdn.jsdelivr.net; " +
                                         "script-src 'self' https://cdn.jsdelivr.net https://cdn.portone.io https://t1.daumcdn.net http://t1.daumcdn.net https://dapi.kakao.com; " +
                                         "img-src 'self' data: https://*.daumcdn.net http://*.daumcdn.net https://*.kakaocdn.net; " +
-                                        "connect-src 'self' https://checkout-service.prod.iamport.co http://dapi.kakao.com; " +
+                                        "connect-src 'self' https://cdn.jsdelivr.net https://checkout-service.prod.iamport.co http://dapi.kakao.com; " +
                                         "object-src 'none'; " +
                                         "frame-src 'self' https://cdn.portone.io https://checkout-service.prod.iamport.co https://payment-gateway-sandbox.tosspayments.com https://postcode.map.daum.net http://postcode.map.daum.net; " +
                                         "child-src 'self' https://cdn.portone.io https://checkout-service.prod.iamport.co https://payment-gateway-sandbox.tosspayments.com https://postcode.map.daum.net http://postcode.map.daum.net; " +
@@ -176,12 +176,12 @@ public class SecurityConfig {
                                 .policyDirectives("default-src 'self'; " +
                                         "font-src 'self' https://cdn.jsdelivr.net; " +
                                         "style-src 'self' https://cdn.jsdelivr.net; " +
-                                        "script-src 'self' https://cdn.jsdelivr.net https://cdn.portone.io https://t1.daumcdn.net http://t1.daumcdn.net https://dapi.kakao.com; " +
-                                        "img-src 'self' data: https://*.daumcdn.net http://*.daumcdn.net https://*.kakaocdn.net; " +
-                                        "connect-src 'self' https://checkout-service.prod.iamport.co http://dapi.kakao.com; " +
+                                        "script-src 'self' 'unsafe-eval' https://cdn.jsdelivr.net https://cdn.portone.io https://t1.daumcdn.net http://t1.daumcdn.net https://dapi.kakao.com ; " +
+                                        "img-src 'self' data: https://*.daumcdn.net https://*.kakaocdn.net; " +
+                                        "connect-src 'self' wss://www.secondhand.kro.kr https://cdn.jsdelivr.net https://checkout-service.prod.iamport.co https://dapi.kakao.com; " +
                                         "object-src 'none'; " +
-                                        "frame-src 'self' https://cdn.portone.io https://checkout-service.prod.iamport.co https://payment-gateway-sandbox.tosspayments.com https://postcode.map.daum.net http://postcode.map.daum.net; " +
-                                        "child-src 'self' https://cdn.portone.io https://checkout-service.prod.iamport.co https://payment-gateway-sandbox.tosspayments.com https://postcode.map.daum.net http://postcode.map.daum.net; " +
+                                        "frame-src 'self' https://cdn.portone.io https://checkout-service.prod.iamport.co https://payment-gateway-sandbox.tosspayments.com https://postcode.map.daum.net; " +
+                                        "child-src 'self' https://cdn.portone.io https://checkout-service.prod.iamport.co https://payment-gateway-sandbox.tosspayments.com https://postcode.map.daum.net; " +
                                         "frame-ancestors 'none';"
                                 )
                         )

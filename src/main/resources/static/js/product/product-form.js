@@ -15,6 +15,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
+
+
     function updateDeliveryFees() {
         if (dealMethodSelect.value === 'DELIVERY') {
             deliveryFeesDiv.classList.remove('d-none');
@@ -98,6 +100,43 @@ document.addEventListener('DOMContentLoaded', function () {
     descInput.addEventListener('input', () => {
         descCount.textContent = descInput.value.length;
     });
+
+    // 숫자 입력창 자동 교정
+    function sanitizeNumberInput(event) {
+        const input = event.target;
+        // 입력값을 정수로 변환하여 앞에 있는 0 등을 제거
+        const sanitizedValue = parseInt(input.value, 10);
+
+        // 변환된 값이 유효한 숫자인지 확인 후, 다시 입력창에 넣어줌
+        if (!isNaN(sanitizedValue)) {
+            input.value = sanitizedValue;
+        }
+    }
+
+    priceInput?.addEventListener('blur', sanitizeNumberInput);
+    normalFeeInput?.addEventListener('blur', sanitizeNumberInput);
+    cheapFeeInput?.addEventListener('blur', sanitizeNumberInput);
+
+    function handleFeeInputFocus(event) {
+        if (event.target.value === '0') {
+            event.target.value = '';
+        }
+    }
+
+    function handleFeeInputBlur(event) {
+        if (event.target.value === '') {
+            event.target.value = '0'
+        }
+    }
+
+    if (normalFeeInput) {
+        normalFeeInput.addEventListener('focus', handleFeeInputFocus);
+        normalFeeInput.addEventListener('blur', handleFeeInputBlur);
+    }
+    if (cheapFeeInput) {
+        cheapFeeInput.addEventListener('focus', handleFeeInputFocus);
+        cheapFeeInput.addEventListener('blur', handleFeeInputBlur);
+    }
 
     function validateInput(input) {
         if (input.checkValidity()) {

@@ -102,6 +102,15 @@ public class ProductService {
             throw new AccessDeniedException("상품을 수정할 권한이 없습니다.");
         }
 
+        if ("DELIVERY".equals(dto.getDealMethod())) {
+            if (dto.getNormalDeliveryFee() == null) {
+                dto.setNormalDeliveryFee(0);
+            }
+            if (dto.getCheapDeliveryFee() == null) {
+                dto.setCheapDeliveryFee(0);
+            }
+        }
+
         // 1. 과거 주문 기록에 사용된 썸네일 URL 목록을 미리 조회
         List<String> protectedThumbnailUrls = orderService.findThumbnailUrlsByProductId(productId);
 

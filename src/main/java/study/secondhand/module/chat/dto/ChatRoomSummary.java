@@ -15,6 +15,7 @@ public class ChatRoomSummary {
     private final boolean otherUserWithdrawn;
 
     private final String lastMessage;
+    private final LocalDateTime lastMessageTime;
     private final String formattedTime;
     private final int unreadCount;
 
@@ -24,6 +25,7 @@ public class ChatRoomSummary {
                            LocalDateTime lastMessageTime, int unreadCount) {
         this.roomId = roomId;
         this.otherUserId = otherUserId;
+        this.lastMessageTime = lastMessageTime;
         this.otherUserNickname = otherUserNickname != null ? otherUserNickname : "상점 " + otherUserId + "호";
         this.otherUserBanned = otherUserBanned;
         this.otherUserWithdrawn = otherUserWithdrawn;

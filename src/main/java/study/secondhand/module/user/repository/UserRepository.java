@@ -19,7 +19,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByOauthIdAndProvider(String oauthId, String provider);
 
-    @Query("SELECT new study.secondhand.module.user.dto.DeliveryInfoDto(u.name, u.phoneNumber, u.address, u.detailAddress, u.postCode) " +
+    @Query("SELECT new study.secondhand.module.user.dto.DeliveryInfoDto(u.name, u.phoneNumber, u.address, u.detailAddress, u.postCode, u.storeName, u.storeAddress) " +
             "FROM User u WHERE u.id = :id")
     DeliveryInfoDto findDeliveryInfoById(@Param("id") Long id);
 

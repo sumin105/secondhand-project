@@ -22,19 +22,19 @@ public class OrderMessage {
     private ChatMessage chatMessage;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id", nullable = false)
+    private Order order;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", nullable = false)
-    private Order order;
+    @Column(length = 2048)
+    private String trackingUrl; // 배송조회 URL
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus orderStatus;
-
-    @Column(length = 2048)
-    private String trackingUrl; // 배송조회 URL
 
     public String getImageUrl() {
         return order != null ? order.getProductThumbnailUrlSnapshot() : null;

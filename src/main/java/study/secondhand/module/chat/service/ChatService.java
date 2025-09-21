@@ -122,43 +122,45 @@ public class ChatService {
 
         // 3. 두 결과를 조합하여 최종 DTO 생성
         return roomInfos.stream().map(info -> {
-            ChatRoom room = info.room();
+                    ChatRoom room = info.room();
 
-            User otherUser = room.getSender().getId().equals(user.getId()) ? room.getReceiver() : room.getSender();
-            ChatMessage lastMessage = lastMessaageMap.get(room.getId());
-            String lastMessageContent = "";
-            LocalDateTime lastMessageTime = room.getCreatedAt();
+                    User otherUser = room.getSender().getId().equals(user.getId()) ? room.getReceiver() : room.getSender();
+                    ChatMessage lastMessage = lastMessaageMap.get(room.getId());
+                    String lastMessageContent = "";
+                    LocalDateTime lastMessageTime = (lastMessage != null) ? lastMessage.getCreatedAt() : room.getCreatedAt();
 
-            if (lastMessageTime != null) {
-                lastMessageTime = lastMessage.getCreatedAt();
+                    if (lastMessageTime != null) {
+                        lastMessageTime = lastMessage.getCreatedAt();
 
-                switch (lastMessage.getType()) {
-                    case TEXT:
-                        lastMessageContent = lastMessage.getContent();
-                        break;
-                    case ORDER:
-                        lastMessageContent = "[주문 메시지]";
-                        break;
-                    case REVIEW:
-                        lastMessageContent = "[후기 메시지]";
-                        break;
-                    case IMAGE:
-                        lastMessageContent = "[이미지]";
-                        break;
-                }
-            }
+                        switch (lastMessage.getType()) {
+                            case TEXT:
+                                lastMessageContent = lastMessage.getContent();
+                                break;
+                            case ORDER:
+                                lastMessageContent = "[주문 메시지]";
+                                break;
+                            case REVIEW:
+                                lastMessageContent = "[후기 메시지]";
+                                break;
+                            case IMAGE:
+                                lastMessageContent = "[이미지]";
+                                break;
+                        }
+                    }
 
-            return new ChatRoomSummary(
-                    room.getId(),
-                    otherUser.getId(),
-                    otherUser.getNickname() != null ? otherUser.getNickname() : "상점 " + otherUser.getId() + "호",
-                    otherUser.isBanned(),
-                    otherUser.isWithdrawn(),
-                    lastMessageContent,
-                    lastMessageTime,
-                    info.unreadCount().intValue()
-            );
-        }).collect(Collectors.toList());
+                    return new ChatRoomSummary(
+                            room.getId(),
+                            otherUser.getId(),
+                            otherUser.getNickname() != null ? otherUser.getNickname() : "상점 " + otherUser.getId() + "호",
+                            otherUser.isBanned(),
+                            otherUser.isWithdrawn(),
+                            lastMessageContent,
+                            lastMessageTime,
+                            info.unreadCount().intValue()
+                    );
+                })
+                .sorted(Comparator.comparing(ChatRoomSummary::getLastMessageTime).reversed())
+                .collect(Collectors.toList());
     }
 
     // 읽음 처리
@@ -275,7 +277,6 @@ public class ChatService {
                 throw new IllegalArgumentException("이미지 메시지의 URL은 비어있을 수 없습니다.");
             }
         }
-
 
         User sender = userService.findById(dto.getSenderId());
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)

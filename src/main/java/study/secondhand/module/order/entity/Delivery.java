@@ -19,23 +19,6 @@ public class Delivery {
     private Payment payment;
 
     @Setter
-    @Column(length = 50)
-    private String deliveryCompany; // 택배 회사 (ex. CJ, 한진, 편의점, 반값 등)
-
-    @Setter
-    @Column(length = 30)
-    private String trackingNumber; // 운송장 번호
-
-    @Setter
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private DeliveryStatus deliveryStatus = DeliveryStatus.READY;
-
-    @Setter
-    @Column(length = 2048)
-    private String trackingUrl;
-
-    @Setter
     @Column(nullable = false, length = 20)
     private String recipientName;
 
@@ -66,6 +49,23 @@ public class Delivery {
     @Setter
     @Column(length = 255)
     private String requestMessage;
+
+    @Setter
+    @Column(length = 30)
+    private String trackingNumber; // 운송장 번호
+
+    @Setter
+    @Column(length = 50)
+    private String deliveryCompany; // 택배 회사 (ex. CJ, 한진, 편의점, 반값 등)
+
+    @Setter
+    @Column(length = 2048)
+    private String trackingUrl;
+
+    @Setter
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private DeliveryStatus deliveryStatus = DeliveryStatus.READY;
 
     public enum DeliveryStatus {
         READY("배송 준비 중"),

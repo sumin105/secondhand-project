@@ -23,6 +23,14 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user; // 구매한 유저
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product; // 상품
+
     @Column(nullable = false, unique = true, length = 255)
     private String paymentId; // 포트원 결제 고유 ID
 
@@ -40,9 +48,6 @@ public class Payment {
     @Max(100030000)
     private int finalAmount; // 최종 금액
 
-    @Column(nullable = false, length = 50)
-    private String payMethod; // 결제 수단(토스, 카카오페이, 카드)
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Status status;
@@ -51,15 +56,10 @@ public class Payment {
     @Column(nullable = false)
     private DeliveryMethod deliveryMethod;
 
+    @Column(nullable = false, length = 50)
+    private String payMethod; // 결제 수단(토스, 카카오페이, 카드)
+
     private LocalDateTime paidAt; // 결제 완료 시각
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user; // 구매한 유저
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product; // 상품
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt; // 결제 요청 시각

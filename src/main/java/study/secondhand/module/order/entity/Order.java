@@ -19,6 +19,10 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "payment_id", nullable = false, unique = true)
+    private Payment payment;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "buyer_id", nullable = false)
     private User buyer;
@@ -31,19 +35,15 @@ public class Order {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "delivery_id", unique = true)
+    private Delivery delivery;
+
     @Column(nullable = false, length = 30)
     private String productTitleSnapshot;
 
     @Column(nullable = false, length = 2048)
     private String productThumbnailUrlSnapshot;
-
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "payment_id", nullable = false, unique = true)
-    private Payment payment;
-
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "delivery_id", unique = true)
-    private Delivery delivery;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

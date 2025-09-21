@@ -121,6 +121,41 @@ document.addEventListener('DOMContentLoaded', () => {
         renderNewImages();
     });
 
+    // 숫자 입력창 자동 교정 로직
+    function sanitizeNumberInput(event) {
+        const input = event.target;
+        const sanitizedValue = parseInt(input.value, 10);
+
+        if (!isNaN(sanitizedValue)) {
+            input.value = sanitizedValue;
+        }
+    }
+
+    priceInput?.addEventListener('blur', sanitizeNumberInput);
+    normalFeeInput?.addEventListener('blur', sanitizeNumberInput);
+    cheapFeeInput?.addEventListener('blur', sanitizeNumberInput);
+
+    function handleFeeInputFocus(event) {
+        if (event.target.value === '0') {
+            event.target.value = '';
+        }
+    }
+
+    function handleFeeInputBlur(event) {
+        if (event.target.value === '') {
+            event.target.value = '0';
+        }
+    }
+
+    if (normalFeeInput) {
+        normalFeeInput.addEventListener('focus', handleFeeInputFocus);
+        normalFeeInput.addEventListener('blur', handleFeeInputBlur);
+    }
+    if (cheapFeeInput) {
+        cheapFeeInput.addEventListener('focus', handleFeeInputFocus);
+        cheapFeeInput.addEventListener('blur', handleFeeInputBlur);
+    }
+
     function validateInput(input) {
         if (!input) return;
         if (input.checkValidity()) {

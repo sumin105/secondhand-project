@@ -1,6 +1,7 @@
 package study.secondhand.module.payment.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,13 +31,19 @@ public class PaymentService {
     private final SystemMessageService systemMessageService;
     private final ProductService productService;
 
-    public PaymentService(PaymentRepository paymentRepository, PortOneApiService portOneApiService, DeliveryService deliveryService, OrderService orderService, SystemMessageService systemMessageService, @Lazy ProductService productService) {
+    private final ObjectMapper objectMapper;
+
+    public PaymentService(PaymentRepository paymentRepository, PortOneApiService portOneApiService,
+                          DeliveryService deliveryService, OrderService orderService,
+                          SystemMessageService systemMessageService, @Lazy ProductService productService,
+                          ObjectMapper objectMapper) {
         this.paymentRepository = paymentRepository;
         this.portOneApiService = portOneApiService;
         this.deliveryService = deliveryService;
         this.orderService = orderService;
         this.systemMessageService = systemMessageService;
         this.productService = productService;
+        this.objectMapper = objectMapper;
     }
 
     @Transactional
@@ -76,7 +83,6 @@ public class PaymentService {
         // 10. 주문 저장, 유저 배송 정보 업데이트, 메시지 전송
         Order order = orderService.createOrder(payment, product, user, delivery);
         systemMessageService.sendOrderMessage(order, product);
-
         return order.getId();
     }
 
@@ -126,6 +132,7 @@ public class PaymentService {
             if (request.getAddress() == null || request.getPostCode() == null || request.getPhone() == null || request.getName() == null) {
                 throw new IllegalArgumentException("일반배송의 필수 정보가 없습니다.");
             }
+
         } else if ("cheap".equals(request.getDeliveryType())) {
             if (request.getStoreName() == null || request.getStoreAddress() == null || request.getPhone() == null || request.getName() == null) {
                 throw new IllegalArgumentException("반값배송의 필수 정보가 없습니다.");
@@ -170,7 +177,7 @@ public class PaymentService {
 
         JsonNode methodNode = info.get("method");
         payment.setPayMethod(methodNode != null && methodNode.has("provider")
-                ? methodNode.get("provider").asText() : "UNKNOWN");
+                ? methodNode.get("provider").asText() : "CARD");
 
         if ("normal".equals(request.getDeliveryType())) {
             payment.setDeliveryMethod(Payment.DeliveryMethod.NORMAL);

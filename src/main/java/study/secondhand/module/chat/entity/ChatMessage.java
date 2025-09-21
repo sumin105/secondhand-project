@@ -28,6 +28,11 @@ public class ChatMessage {
     @JoinColumn(name = "sender_id", nullable = false)
     private User sender;
 
+    // 메시지를 처음 보낼 때 어떤 상품에서 보냈는지 남겨둠
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    private Product product;
+
     @Column(length = 500)
     @Size(max = 500, message = "메시지는 500자를 초과할 수 없습니다.")
     private String content; // 일반 메시지
@@ -40,10 +45,6 @@ public class ChatMessage {
     @Column(name = "is_read", nullable = false)
     private boolean isRead;
 
-    // 메시지를 처음 보낼 때 어떤 상품에서 보냈는지 남겨둠
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    private Product product;
 
     @Column(length = 2048)
     private String imageUrl;

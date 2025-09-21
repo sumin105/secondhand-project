@@ -18,12 +18,16 @@
         <div class="card-body">
             <div class="product-top">
                 <div class="product-detail">
-                    <div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}"></div>
-                    <div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
+                    <div th:if="${successMessage}" class="alert alert-success" role="alert"
+                         th:text="${successMessage}"></div>
+                    <div th:if="${errorMessage}" class="alert alert-danger" role="alert"
+                         th:text="${errorMessage}"></div>
 
                     <div class="product-image-container">
                         <button class="slider-button prev-button" id="prevBtn">&#10094;</button>
-                        <img id="mainImage" th:src="${product.images.isEmpty() ? '/images/default.png' : product.images[0].imageUrl}" alt="상품 이미지" class="product-image"/>
+                        <img id="mainImage"
+                             th:src="${product.images.isEmpty() ? '/images/default.png' : product.images[0].imageUrl}"
+                             alt="상품 이미지" class="product-image"/>
                         <button class="slider-button next-button" id="nextBtn">&#10095;</button>
                     </div>
 
@@ -55,12 +59,14 @@
                                     class="btn btn-outline-secondary same-size-btn">
                                 찜한 유저
                             </button>
-                            <button th:if="${!product.isOwner}" id="favoriteBtn" class="btn btn-outline-danger same-size-btn"
+                            <button th:if="${!product.isOwner}" id="favoriteBtn"
+                                    class="btn btn-outline-danger same-size-btn"
                                     th:attr="data-product-id=${product.id}, data-logged-in=${loginUser != null}"
                                     th:text="${product.favorite} ? '찜 취소 💔' : '찜 ❤️'">
                                 찜 상태
                             </button>
-                            <button th:if="${!product.isOwner}" id="chatBtn" class="btn btn-outline-primary same-size-btn"
+                            <button th:if="${!product.isOwner}" id="chatBtn"
+                                    class="btn btn-outline-primary same-size-btn"
                                     th:data-chat-url="@{/chat/user/{id}(id=${product.sellerId})}"
                                     th:attr="data-logged-in=${loginUser != null}">
                                 채팅하기
@@ -93,8 +99,9 @@
                 <div th:if="${product.dealMethod == '택배거래'}">
                     <strong>배송비 </strong>
                     <span>
-                        일반: <span th:text="${#numbers.formatInteger(product.normalDeliveryFee, 3, 'COMMA')} + '원'">0원</span>
-                         | 반값•알뜰 <span th:text="${#numbers.formatInteger(product.cheapDeliveryFee, 3, 'COMMA')} + '원'">0원</span>
+                        일반: <span
+                            th:text="${product.normalDeliveryFee != 0 ? #numbers.formatInteger(product.normalDeliveryFee, 3, 'COMMA') : 0} + '원'">0원</span>
+                         | 반값•알뜰: <span th:text="${product.cheapDeliveryFee != 0 ? #numbers.formatInteger(product.cheapDeliveryFee, 3, 'COMMA') : 0} + '원'">0원</span>
                     </span>
                 </div>
                 <p>
@@ -111,7 +118,8 @@
         </div>
     </div>
 
-    <div class="modal fade" id="wishlistUsersModal" tabindex="-1" aria-labelledby="wishlistUsersModalLabel" aria-hidden="true">
+    <div class="modal fade" id="wishlistUsersModal" tabindex="-1" aria-labelledby="wishlistUsersModalLabel"
+         aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -123,17 +131,18 @@
         </div>
     </div>
 
-    <div class="modal fade" id="reportProductModal" tabindex="-1" aria-labelledby="reportProductModalLabel" aria-hidden="true">
+    <div class="modal fade" id="reportProductModal" tabindex="-1" aria-labelledby="reportProductModalLabel"
+         aria-hidden="true">
         <div class="modal-dialog">
             <form class="modal-content" id="reportProductForm" th:action="@{/reports/product}" method="post">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                 <div class="modal-header">
                     <h5 class="modal-title text-danger" id="reportProductModalLabel">상품 신고</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
                 </div>
 
                 <div class="modal-body">
-                    <input type="hidden" name="reportedProductId" th:value="${product.id}" />
+                    <input type="hidden" name="reportedProductId" th:value="${product.id}"/>
 
                     <div class="mb-3">
                         <label for="reportReason" class="form-label">신고 사유</label>
@@ -165,7 +174,8 @@
     </div>
 
     <!-- 배송 옵션 선택 모달 -->
-    <div class="modal fade" id="deliveryOptionModal" tabindex="-1" aria-labelledby="deliveryOptionModal" aria-hidden="true">
+    <div class="modal fade" id="deliveryOptionModal" tabindex="-1" aria-labelledby="deliveryOptionModal"
+         aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -220,7 +230,8 @@
                     </div>
                     <div class="mb-3">
                         <label for="deliveryRequest"><strong>요청사항</strong></label>
-                        <textarea id="deliveryRequest" class="form-control" rows="3" placeholder="예) 빠른 배송 부탁드려요"></textarea>
+                        <textarea id="deliveryRequest" class="form-control" rows="3"
+                                  placeholder="예) 빠른 배송 부탁드려요"></textarea>
                     </div>
                     <div class="mb-3">
                         <h6>총 결제 금액: <span id="finalAmountText" class="text-danger"></span></h6>
@@ -246,11 +257,14 @@
                     <form id="deliveryForm">
                         <div class="mb-3">
                             <label for="name" class="form-label">이름</label>
-                            <input type="text" class="form-control" id="name" required>
+                            <input type="text" class="form-control" id="name" required maxlength="20">
                         </div>
                         <div class="mb-3">
                             <label for="phone" class="form-label">전화번호</label>
-                            <input type="tel" class="form-control" id="phone" required>
+                            <input type="tel" class="form-control" id="phone" required
+                                   placeholder="'-' 없이 숫자만 입력"
+                                   pattern="[0-9]*"
+                                   maxlength="11">
                         </div>
                         <div class="mb-3">
                             <label for="addressLine1" class="form-label">주소</label>
@@ -258,7 +272,10 @@
                         </div>
                         <div class="mb-3">
                             <label for="addressLine2" class="form-label">상세주소</label>
-                            <input type="text" class="form-control" id="addressLine2">
+                            <input type="text" class="form-control" id="addressLine2" maxlength="255">
+                            <div class="text-end small text-muted mt-1">
+                                <span id="detailAddressCount">0</span> / 255
+                            </div>
                         </div>
                         <button type="submit" class="btn btn-success w-100">완료</button>
                     </form>
@@ -279,11 +296,14 @@
                     <form id="cvsForm">
                         <div class="mb-3">
                             <label for="cvsName" class="form-label">이름</label>
-                            <input type="text" class="form-control" id="cvsName" required>
+                            <input type="text" class="form-control" id="cvsName" required maxlength="20">
                         </div>
                         <div class="mb-3">
                             <label for="cvsPhone" class="form-label">전화번호</label>
-                            <input type="tel" class="form-control" id="cvsPhone" required>
+                            <input type="tel" class="form-control" id="cvsPhone" required
+                                   placeholder="'-' 없이 숫자만 입력"
+                                   pattern="[0-9]*"
+                                   maxlength="11">
                         </div>
                         <div class="mb-3">
                             <label for="cvsStoreNameInput" class="form-label">편의점명</label>
@@ -301,7 +321,8 @@
     </div>
 
     <!-- 카카오 지도 모달 -->
-    <div class="modal fade" id="placeSearchModal" tabindex="-1" aria-labelledby="placeSearchModalLabel" aria-hidden="true">
+    <div class="modal fade" id="placeSearchModal" tabindex="-1" aria-labelledby="placeSearchModalLabel"
+         aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content map-modal-content">
                 <div class="modal-header">
@@ -332,7 +353,8 @@
         </div>
     </div>
 
-    <script src="/js/product/product-view.js"></script>
+    <script th:src="@{/js/product/product-view.js}"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script th:src="@{'https://dapi.kakao.com/v2/maps/sdk.js?appkey=' + ${kakaoJavascriptKey} + '&libraries=services&autoload=false'}"></script>
     <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>

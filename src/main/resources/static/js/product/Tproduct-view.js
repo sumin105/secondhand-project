@@ -1,11 +1,14 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // 1. 초기 설정 및 전역 변수
     const dataElement = document.getElementById('product-view-data');
+
     if (!dataElement || !dataElement.dataset.productJson) {
         console.error("Product data element or data attribute not found!");
         return;
     }
-    const productData = JSON.parse(dataElement.dataset.productJson);
+
+    const productJsonString = dataElement.dataset.productJson;
+    const productData = JSON.parse(productJsonString);
+
     const images = productData.imageUrls || [];
 
     let currentIndex = 0;
@@ -17,9 +20,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // Kakao 지도 관련 변수
     let map, markers = [], infowindow, ps;
 
-
-    // 2. 핵심 기능 함수
-    // 이미지 슬라이더
     function updateImage() {
         const mainImage = document.getElementById("mainImage");
         const prevBtn = document.getElementById("prevBtn");
@@ -42,21 +42,18 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    document.getElementById("prevBtn")?.addEventListener("click", () => {
-        if (currentIndex > 0) {
-            currentIndex--;
-            updateImage();
-        }
-    });
+    function showPrevImage() {
+        if (images.length === 0) return;
+        currentIndex = (currentIndex - 1 + images.length) % images.length;
+        updateImage();
+    }
 
-    document.getElementById("nextBtn")?.addEventListener("click", () => {
-        if (currentIndex < images.length - 1) {
-            currentIndex++;
-            updateImage();
-        }
-    });
+    function showNextImage() {
+        if (images.length === 0) return;
+        currentIndex = (currentIndex + 1) % images.length;
+        updateImage();
+    }
 
-    // 찜하기
     async function toggleFavorite() {
         const favoriteBtn = document.getElementById("favoriteBtn");
         if (!favoriteBtn) return;
@@ -73,6 +70,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const productId = favoriteBtn.dataset.productId;
         const isCurrentlyFavorite = favoriteBtn.innerText.includes("찜 취소 💔");
         const httpMethod = isCurrentlyFavorite ? 'DELETE' : 'POST';
+
         const countSpan = document.querySelector(".favorite-count span");
         let currentCount = parseInt(countSpan.innerText, 10);
 
@@ -82,6 +80,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 headers: {[csrfHeader]: csrfToken},
                 credentials: 'include'
             });
+
+            // if (response.status === 401) {
+            //    if (typeof openLoginModal === 'function') openLoginModal();
+            //    else alert('로그인이 필요합니다.');
+            //   return;
+            // }
 
             if (!response.ok) {
                 throw new Error('찜하기 처리 실패');
@@ -93,14 +97,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 favoriteBtn.innerText = "찜 취소 💔"
                 countSpan.innerText = currentCount + 1;
             }
+
         } catch (err) {
             console.error("찜 요청 실패: ", err);
             alert("요청 처리 중 오류가 발생했습니다.");
         }
     }
-    document.getElementById("favoriteBtn")?.addEventListener("click", toggleFavorite);
 
-    // 찜목록
     function openWishlistUsersModal() {
         const wishlistUsers = productData.wishlistUsers;
         const modalBody = document.getElementById('wishlistUsersList');
@@ -125,9 +128,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const wishlistModal = new bootstrap.Modal(document.getElementById('wishlistUsersModal'));
         wishlistModal.show();
     }
-    document.getElementById("wishlistUsersBtn")?.addEventListener("click", openWishlistUsersModal);
 
-    // 결제, 배송
     function openDeliveryInfoModal() {
         const infoModalEl = document.getElementById("deliveryInfoModal");
         let infoModal = bootstrap.Modal.getInstance(infoModalEl);
@@ -143,8 +144,6 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("addressLine1").value = selectedDeliveryInfo.address || "";
             document.getElementById("addressLine2").value = selectedDeliveryInfo.detailAddress || "";
         }
-
-        updateDetailAddressCount();
         infoModal.show();
     }
 
@@ -215,8 +214,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.getElementById('cvsStoreName').textContent = data.storeName || "편의점 미지정";
                 document.getElementById('cvsStoreAddress').textContent = data.storeAddress || "";
 
-                updateDetailAddressCount(); // 상세주소 글자 수 업데이트
-
                 if (type === 'normal') {
                     addressInfoDiv.classList.remove('d-none');
                     cheapDeliveryInfoDiv.classList.add('d-none');
@@ -227,13 +224,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const detailModal = new bootstrap.Modal(document.getElementById('deliveryDetailModal'));
                 detailModal.show();
             } else {
-                if (type === 'normal') {
-                    document.getElementById("name").value = "";
-                    document.getElementById("phone").value = "";
-                    document.getElementById("addressLine1").value = "";
-                    document.getElementById("addressLine2").value = "";
-                    openDeliveryInfoModal();
-                }
+                if (type === 'normal') openDeliveryInfoModal();
                 else openCVSInfoModal();
             }
         } catch (error) {
@@ -356,66 +347,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-
-    // 신고 모달
-    const reportModal = document.getElementById('reportProductModal');
-    if (reportModal) {
-        const reasonSelect = document.getElementById('reportReason');
-        const descriptionTextarea = document.getElementById('reportDescription');
-        const descCountSpan = document.getElementById('reportDescCount');
-        const submitBtn = document.getElementById('reportSubmitBtn');
-
-        function toggleReportSubmitButton() {
-            if (reasonSelect.value) {
-                submitBtn.disabled = false;
-            } else {
-                submitBtn.disabled = true;
-            }
-        }
-
-        function updateDescriptionCount() {
-            if (descCountSpan) {
-                descCountSpan.textContent = descriptionTextarea.value.length;
-            }
-        }
-
-        reasonSelect.addEventListener('change', toggleReportSubmitButton);
-        descriptionTextarea.addEventListener('input', updateDescriptionCount);
-
-        reportModal.addEventListener('show.bs.modal', function () {
-            reportModal.querySelector('form').reset();
-            toggleReportSubmitButton();
-            updateDescriptionCount();
-        });
-    }
-
-    // 채팅
-    document.getElementById("chatBtn")?.addEventListener("click", function () {
-        if (this.getAttribute("data-logged-in") !== 'true') {
-            if (typeof openLoginModal === 'function') openLoginModal();
-            else alert('로그인이 필요합니다.');
-            return;
-        }
-        const chatUrl = this.dataset.chatUrl;
-        if (chatUrl) window.location.href = chatUrl;
-    });
-
-    // 초기 실행 코드
-    updateImage();
-
-
-    // Daum 우편번호 API 관련
-    document.getElementById("addressLine1")?.addEventListener("click", function () {
-        new daum.Postcode({
-            oncomplete: function (data) {
-                document.getElementById("addressLine1").value = data.roadAddress;
-                selectedPostCode = data.zonecode;
-                document.getElementById("addressLine2")?.focus();
-            }
-        }).open();
-    });
-
-    // Kakao 지도 (편의점 검색) 관련 함수
+    // --- Kakao Map 관련 함수 --- //
     function searchPlaces() {
         const keyword = document.getElementById('keyword')?.value.trim();
         if (!keyword) {
@@ -551,7 +483,59 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // 4. Kakao 지도 관련 이벤트 리스너
+
+    // --- 3. 이벤트 리스너 등록 --- //
+
+    // 이미지 슬라이더
+    document.getElementById("prevBtn")?.addEventListener("click", showPrevImage);
+    document.getElementById("nextBtn")?.addEventListener("click", showNextImage);
+
+    // 상품 액션 버튼
+    document.getElementById("wishlistUsersBtn")?.addEventListener("click", openWishlistUsersModal);
+    document.getElementById("favoriteBtn")?.addEventListener("click", toggleFavorite);
+    document.getElementById("selectNormalDelivery")?.addEventListener("click", () => selectDeliveryFee('normal'));
+    document.getElementById("selectCheapDelivery")?.addEventListener("click", () => selectDeliveryFee('cheap'));
+    document.getElementById("backToOptionBtn")?.addEventListener("click", backToOptionModal);
+    document.getElementById("editAddressBtn")?.addEventListener("click", openDeliveryInfoModal);
+    document.getElementById("editCvsBtn")?.addEventListener("click", openCVSInfoModal);
+    document.getElementById("payNowBtn")?.addEventListener("click", handlePaymentAndCloseModal);
+
+    document.getElementById("chatBtn")?.addEventListener("click", function () {
+        if (this.getAttribute("data-logged-in") !== 'true') {
+            if (typeof openLoginModal === 'function') openLoginModal();
+            else alert('로그인이 필요합니다.');
+            return;
+        }
+        const chatUrl = this.dataset.chatUrl;
+        if (chatUrl) window.location.href = chatUrl;
+    });
+
+    document.getElementById("paymentBtn")?.addEventListener("click", async () => {
+        if (document.getElementById("paymentBtn").getAttribute("data-logged-in") !== 'true') {
+            if (typeof openLoginModal === 'function') openLoginModal();
+            else alert('로그인이 필요합니다.');
+            return;
+        }
+
+        if (productData.dealMethod === '택배거래') {
+            const modal = new bootstrap.Modal(document.getElementById('deliveryOptionModal'));
+            modal.show();
+        } else {
+            await requestPayment(productData.price, null);
+        }
+    });
+
+    // 주소 및 편의점 검색 관련
+    document.getElementById("addressLine1")?.addEventListener("click", function () {
+        new daum.Postcode({
+            oncomplete: function (data) {
+                document.getElementById("addressLine1").value = data.roadAddress;
+                selectedPostCode = data.zonecode;
+                document.getElementById("addressLine2")?.focus();
+            }
+        }).open();
+    });
+
     document.getElementById("searchForm")?.addEventListener("submit", function (e) {
         e.preventDefault();
         searchPlaces();
@@ -588,88 +572,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         placeSearchModal.show();
     });
-
-    // 1. 배송 정보 입력 모달의 실시간 입력 검증
-    function enforceMaxLength(inputElement, maxLength) {
-        if (!inputElement) return;
-
-        inputElement.addEventListener('input', () => {
-            if (inputElement.value.length > maxLength) {
-                inputElement.value = inputElement.value.slice(0, maxLength);
-            }
-        });
-    }
-
-    const nameInput = document.getElementById('name');
-    enforceMaxLength(nameInput, 20);
-    const cvsNameInput = document.getElementById('cvsName');
-    enforceMaxLength(cvsNameInput, 20);
-
-    const deliveryInfoModalEl = document.getElementById('deliveryInfoModal');
-    let detailAddressInput;
-    let detailAddressCount;
-
-    if (deliveryInfoModalEl) {
-        detailAddressInput = deliveryInfoModalEl.querySelector('#addressLine2');
-        detailAddressCount = deliveryInfoModalEl.querySelector('#detailAddressCount');
-    }
-
-    function updateDetailAddressCount() {
-        if (detailAddressInput && detailAddressCount) {
-            detailAddressCount.textContent = detailAddressInput.value.length;
-        }
-    }
-
-    if (deliveryInfoModalEl) {
-        const phoneInput = deliveryInfoModalEl.querySelector('#phone');
-        phoneInput.addEventListener('input', (e) => {
-            e.target.value = e.target.value.replace(/[^0-9]/g, '');
-        });
-
-        if (detailAddressInput) {
-            detailAddressInput.addEventListener('input', updateDetailAddressCount);
-        }
-    }
-
-    const cvsModal = document.getElementById('cvsInfoModal');
-    if (cvsModal) {
-        const cvsPhoneInput = cvsModal.querySelector('#cvsPhone');
-        cvsPhoneInput.addEventListener('input', (e) => {
-            e.target.value = e.target.value.replace(/[^0-9]/g, '');
-        });
-    }
-
-
-
-    // --- 3. 이벤트 리스너 등록 --- //
-
-    // 상품 액션 버튼
-
-    document.getElementById("selectNormalDelivery")?.addEventListener("click", () => selectDeliveryFee('normal'));
-    document.getElementById("selectCheapDelivery")?.addEventListener("click", () => selectDeliveryFee('cheap'));
-    document.getElementById("backToOptionBtn")?.addEventListener("click", backToOptionModal);
-    document.getElementById("editAddressBtn")?.addEventListener("click", openDeliveryInfoModal);
-    document.getElementById("editCvsBtn")?.addEventListener("click", openCVSInfoModal);
-    document.getElementById("payNowBtn")?.addEventListener("click", handlePaymentAndCloseModal);
-
-
-    document.getElementById("paymentBtn")?.addEventListener("click", async () => {
-        if (document.getElementById("paymentBtn").getAttribute("data-logged-in") !== 'true') {
-            if (typeof openLoginModal === 'function') openLoginModal();
-            else alert('로그인이 필요합니다.');
-            return;
-        }
-
-        if (productData.dealMethod === '택배거래') {
-            const modal = new bootstrap.Modal(document.getElementById('deliveryOptionModal'));
-            modal.show();
-        } else {
-            await requestPayment(productData.price, null);
-        }
-    });
-
-
-
 
     // 폼 제출 관련
     document.getElementById("deliveryForm")?.addEventListener("submit", function (event) {
@@ -737,11 +639,42 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 
-
+    // --- 4. 초기 실행 코드 --- //
+    updateImage();
 
     const normalFeeText = document.getElementById("normalFeeText");
     const cheapFeeText = document.getElementById("cheapFeeText");
     if (normalFeeText) normalFeeText.textContent = productData.normalDeliveryFee.toLocaleString() + "원";
     if (cheapFeeText) cheapFeeText.textContent = productData.cheapDeliveryFee.toLocaleString() + "원";
 
+    const reportModal = document.getElementById('reportProductModal');
+    if (reportModal) {
+        const reasonSelect = document.getElementById('reportReason');
+        const descriptionTextarea = document.getElementById('reportDescription');
+        const descCountSpan = document.getElementById('reportDescCount');
+        const submitBtn = document.getElementById('reportSubmitBtn');
+
+        function toggleReportSubmitButton() {
+            if (reasonSelect.value) {
+                submitBtn.disabled = false;
+            } else {
+                submitBtn.disabled = true;
+            }
+        }
+
+        function updateDescriptionCount() {
+            if (descCountSpan) {
+                descCountSpan.textContent = descriptionTextarea.value.length;
+            }
+        }
+
+        reasonSelect.addEventListener('change', toggleReportSubmitButton);
+        descriptionTextarea.addEventListener('input', updateDescriptionCount);
+
+        reportModal.addEventListener('show.bs.modal', function () {
+            reportModal.querySelector('form').reset();
+            toggleReportSubmitButton();
+            updateDescriptionCount();
+        });
+    }
 });

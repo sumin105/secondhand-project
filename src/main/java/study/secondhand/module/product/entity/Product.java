@@ -23,22 +23,44 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seller_id", nullable = false)
+    private User seller; // 판매자
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
+
     @Column(nullable = false, length = 30)
     @Size(min = 2, max = 30, message = "상품명은 2자 이상 30자 이하여야 합니다.")
     private String title; // 상품명
-
-    @Column(nullable = false, columnDefinition = "TEXT")
-    @Size(min = 10, max = 2000, message = "설명은 10자 이상 2000자 이내여야 합니다.")
-    private String description; // 상품설명
 
     @Column(nullable = false)
     @Min(value = 500, message = "가격은 500원 이상이어야 합니다.")
     @Max(value = 100000000, message = "가격은 1억 원 이하여야 합니다.")
     private int price; // 가격
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    @Size(min = 10, max = 2000, message = "설명은 10자 이상 2000자 이내여야 합니다.")
+    private String description; // 상품설명
+
+    @Column(nullable = false, length = 2048)
+    private String thumbnailImageUrl;
+
+    @Max(value = 30000, message = "일반택배비는 30,000원을 초과할 수 없습니다.")
+    private Integer normalDeliveryFee; // 일반 택배 배송비
+
+    @Max(value = 30000, message = "반값택배비는 30,000원을 초과할 수 없습니다.")
+    private Integer cheapDeliveryFee; // 반값 택배 배송비
+
+    @Setter
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ProductStatus status; // 판매 상태 (판매중 / 예약중 / 판매완료)
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private DealMethod dealMethod; // 거래 방식 (직거래 / 택배)
 
     @Setter
     @Column(nullable = false)
@@ -51,36 +73,13 @@ public class Product {
     private int favoriteCount = 0;
 
     @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt; // 생성 시각
+    private LocalDateTime createdAt;
 
     @Column(nullable = false)
-    private LocalDateTime updatedAt; // 수정 시각
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private DealMethod dealMethod; // 거래 방식 (직거래 / 택배)
-
-    @Setter
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ProductStatus status; // 판매 상태 (판매중 / 예약중 / 판매완료)
-
-    // 엔테티 연관관계 필드에는 @Column 사용 x
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "seller_id", nullable = false) // 외래 키 컬럼 지정
-    private User seller; // 판매자 (user와 연관관계)
+    private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductImage> images = new ArrayList<>();
-
-    @Column(nullable = false, length = 2048)
-    private String thumbnailImageUrl;
-
-    @Max(value = 30000, message = "일반택배비는 30,000원을 초과할 수 없습니다.")
-    private Integer normalDeliveryFee; // 일반 택배 배송비
-
-    @Max(value = 30000, message = "반값택배비는 30,000원을 초과할 수 없습니다.")
-    private Integer cheapDeliveryFee; // 반값 택배 배송비
 
     @PrePersist
     public void prePersist() {
@@ -92,7 +91,6 @@ public class Product {
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
-
 
     public Product(ProductRequestDto dto, User seller, Category category) {
         this.title = dto.getTitle();

@@ -24,7 +24,6 @@ public class ProductRequestDto {
     @NotBlank(message = "거래 방식은 필수 선택 값입니다.")
     private String dealMethod; // ex. DIRECT
 
-
     private String status; // ex. ON_SALE
 
     private MultipartFile[] image; // 단일 이미지 업로드용

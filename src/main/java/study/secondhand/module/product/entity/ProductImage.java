@@ -14,12 +14,12 @@ public class ProductImage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "image_url", nullable = false, length = 2048)
-    private String imageUrl;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
+
+    @Column(name = "image_url", nullable = false, length = 2048)
+    private String imageUrl;
 
     public ProductImage(String imageUrl) {
         this.imageUrl = imageUrl;

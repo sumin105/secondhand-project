@@ -32,10 +32,6 @@ public class Report {
     @JoinColumn(name = "reported_user_id")
     private User reportedUser;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ReportType type;
-
     @Column(nullable = false, length = 100)
     @NotBlank(message = "신고 사유는 필수입니다.")
     @Size(max = 100)
@@ -44,6 +40,10 @@ public class Report {
     @Column(length = 500)
     @Size(max = 500, message = "상세 설명은 500자를 초과할 수 없습니다.")
     private String description; // 상세 설명
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ReportType type;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

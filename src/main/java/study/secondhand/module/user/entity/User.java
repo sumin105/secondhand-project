@@ -33,29 +33,16 @@ public class User {
     @Column(length = 12, unique = true)
     private String nickname;
 
-    @Setter
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @Builder.Default
-    private Role role = Role.USER;
-
-    @Setter
-    @Column(nullable = false)
-    @Builder.Default
-    private boolean deleted = false;
-
-    @Setter
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @Builder.Default
-    private UserStatus status = UserStatus.ACTIVE;
-
     @Column(length = 255)
     private String email;
 
     @Setter
     @Column(length = 15)
     private String phoneNumber;
+
+    @Setter
+    @Column(length = 500)
+    private String intro;
 
     @Setter
     @Column(length = 255)
@@ -78,11 +65,23 @@ public class User {
     private String storeAddress;
 
     @Setter
-    @Column(length = 500)
-    private String intro;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private Role role = Role.USER;
+
+    @Setter
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private UserStatus status = UserStatus.ACTIVE;
+
+    @Setter
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean deleted = false;
 
     private int reportCount;
-
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

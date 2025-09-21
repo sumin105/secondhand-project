@@ -11,10 +11,7 @@ import org.springframework.web.client.RestTemplate;
 @Service
 @RequiredArgsConstructor
 public class PortOneApiService {
-    // 인증 관련 API를 제외한 모든 API는 HTTP Authorization 헤더로 아래 형식의 인증 정보를 전달해주셔야 합니다.
-    //Authorization: PortOne MY_API_SECRET
-    // GET 요청 시에 Body를 전달해야 하는 경우, Body 대신 Query를 사용할 수 있습니다.
-    //이 경우, Body 객체를 requestBody Query 필드에 넣어주시면 됩니다.
+
     @Value("${portOne.api.secret}")
     private String apiSecret;
 
